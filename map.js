@@ -1,4 +1,4 @@
-let map, view;
+var map, view;
 
 require([
   'esri/Map',

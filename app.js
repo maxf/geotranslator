@@ -28,11 +28,11 @@ const showDms = function(lonDeg, lonMin, lonSec, lonDir, latDeg, latMin, latSec,
   $('lon-dms-deg').innerHTML = lonDeg;
   $('lon-dms-min').innerHTML = lonMin;
   $('lon-dms-sec').innerHTML = lonSec.toFixed(3);
-  $('lon-dms-dir').innerHTML = lonDir;
+  $('lon-dms-dir').innerHTML = lonDir === 'E' ? 'EAST' : 'WEST' ;
   $('lat-dms-deg').innerHTML = latDeg;
   $('lat-dms-min').innerHTML = latMin;
   $('lat-dms-sec').innerHTML = latSec.toFixed(3);
-  $('lat-dms-dir').innerHTML = latDir;
+  $('lat-dms-dir').innerHTML = latDir === 'N' ? 'NORTH' : 'SOUTH';
 };
 
 
