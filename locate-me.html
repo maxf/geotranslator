@@ -1,0 +1,48 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Main</title>
+    <link rel="stylesheet" href="main.css">
+    <link rel="stylesheet" href="https://js.arcgis.com/4.12/esri/themes/light/main.css">
+    <script src="https://js.arcgis.com/4.12/"></script>
+  </head>
+  <body>
+    <h2>Lat/Lon (Decimal)</h2>
+    <div id="lat-lon-dec">
+      Lat: <span id="lat-dec"></span>,
+      Lon: <span id="lon-dec"></span>
+    </div>
+    <h2>Lat/Lon (DMS)</h2>
+    <div id="lat-lon-dms">
+      <span id="lat-dms-deg"></span>°
+      <span id="lat-dms-min"></span>'
+      <span id="lat-dms-sec"></span>"
+      <span id="lat-dms-dir"></span>
+      <br/>
+      <span id="lon-dms-deg"></span>°
+      <span id="lon-dms-min"></span>'
+      <span id="lon-dms-sec"></span>"
+      <span id="lon-dms-dir"></span>
+    </div>
+
+    <h2>What3words</h2>
+    <div>
+      <span id="w3w-1"></span>
+      <span id="w3w-2"></span>
+      <span id="w3w-3"></span>
+    </div>
+
+    <p id="message" style="border: 1px solid red; display:none"></p>
+
+    <script id="app" src="app.js"></script>
+    <script>
+     if ('geolocation' in navigator) {
+       navigator.geolocation.getCurrentPosition(function(position) {
+         populateTest(`${position.coords.longitude.toFixed(5)} ${position.coords.latitude.toFixed(5)}`);
+       });
+     }
+    </script>
+
+  </body>
+</html>
