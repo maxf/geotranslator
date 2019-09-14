@@ -1,0 +1,84 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Main</title>
+    <link rel="stylesheet" href="main.css">
+  </head>
+  <body>
+    <div id="info" style="visibility: visible;">
+      <p id="info_start" style="display: inline;">
+        Click on the microphone icon and begin speaking for as long as you like.
+      </p>
+      <p id="info_speak_now" style="display:none">
+        Speak now.
+      </p>
+      <p id="info_no_speech" style="display:none">
+        No speech was detected. You may need to adjust your <a href="//support.google.com/chrome/bin/answer.py?hl=en&amp;answer=1407892">microphone
+        settings</a>.
+      </p>
+      <p id="info_no_microphone" style="display:none">
+        No microphone was found. Ensure that a microphone is installed and that
+        <a href="//support.google.com/chrome/bin/answer.py?hl=en&amp;answer=1407892">
+          microphone settings</a> are configured correctly.
+      </p>
+      <p id="info_allow" style="display:none">
+        Click the "Allow" button above to enable your microphone.
+      </p>
+      <p id="info_denied" style="display:none">
+        Permission to use microphone was denied.
+      </p>
+      <p id="info_blocked" style="display:none">
+        Permission to use microphone is blocked. To change, go to
+        chrome://settings/contentExceptions#media-stream
+      </p>
+      <p id="info_upgrade" style="display:none">
+        Web Speech API is not supported by this browser. Upgrade to <a href="//www.google.com/chrome">Chrome</a> version 25 or later.
+      </p>
+    </div>
+    <button id="start_button" onclick="startButton(event)" style="display: inline-block;"><img alt="Start" id="start_img" src="mic.gif"></button>
+    <div id="results">
+      <span class="interim" id="interim_span"></span>
+    </div>
+    <div id="formats">Format: start recording to see sample rate</div>
+
+
+    <hr/>
+
+    <button onclick="populateTest('38.2383283 -0.234432')">Dec</button>
+    <button onclick="populateTest('38 degrees 3 minutes 2.3 seconds north 5 degrees 62 minutes 22.3 seconds east')">Dms</button>
+    <button onclick="populateTest('pitch knowledge pending')">w3w</button>
+
+    <h1>Transcript</h1>
+    <span class="final" id="final_span"></span>
+    <h2>Lat/Lon (Decimal)</h2>
+    <div id="lat-lon-dec">
+      Lat: <span id="lat-dec"></span>,
+      Lon: <span id="lon-dec"></span>
+    </div>
+    <h2>Lat/Lon (DMS)</h2>
+    <div id="lat-lon-dms">
+      <span id="lat-dms-deg"></span>°
+      <span id="lat-dms-min"></span>'
+      <span id="lat-dms-sec"></span>"
+      <span id="lat-dms-dir"></span>
+      <br/>
+      <span id="lon-dms-deg"></span>°
+      <span id="lon-dms-min"></span>'
+      <span id="lon-dms-sec"></span>"
+      <span id="lon-dms-dir"></span>
+    </div>
+
+    <h2>What3words</h2>
+    <div>
+      <span id="w3w-1"></span>
+      <span id="w3w-2"></span>
+      <span id="w3w-3"></span>
+    </div>
+
+    <h2>Message</h2>
+    <p id="message">ABC</p>
+
+    <script id="app" src="app.js?g"></script>
+  </body>
+</html>

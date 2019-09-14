@@ -1,0 +1,9 @@
+name: maia
+root: ~/dev/geotranslator/
+
+windows:
+  - main:
+      layout: main-vertical
+      panes:
+        - http-server
+        -
