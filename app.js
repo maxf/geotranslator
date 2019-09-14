@@ -141,7 +141,8 @@ function showButtons(style) {
 
 function log(text) {
   const msg = document.getElementById('message');
-  msg.innerHTML = msg.innerHTML + '<hr/>' + text
+  msg.style.display = 'block';
+  msg.innerHTML = msg.innerHTML + '<p>' + text + '</p>';
 }
 
 
@@ -155,9 +156,13 @@ const populateTest = function(text) {
 };
 
 
-const showDec = function(lat, lon) {
-  $('lat-dec').innerHTML = lat.toFixed(5);
+const showDec = function(lon, lat) {
   $('lon-dec').innerHTML = lon.toFixed(5);
+  $('lat-dec').innerHTML = lat.toFixed(5);
+
+  console.log(lon,lat);
+  view.center = [lon, lat];
+  view.zoom = 15;
 };
 
 const showDms = function(lonDeg, lonMin, lonSec, lonDir, latDeg, latMin, latSec, latDir) {
@@ -179,10 +184,17 @@ const showW3w = function(w1, w2, w3) {
 };
 
 
-const populateFromDec = function(lat, lon) {
-  showDec(lat,lon);
+const populateFromDec = function(lon, lat) {
+  showDec(lon, lat);
 
   // calculate DMS from Dec
+  const posLon = Math.abs(lon);
+  const lonDf = Math.floor(posLon);
+  const lonM = (posLon - lonDf) * 60;
+  const lonMf = Math.floor(lonM);
+  const lonS = (lonM - lonMf) * 60;
+  const lonDir = lon > 0 ? 'E' : 'W';
+
   const posLat = Math.abs(lat);
   const latDf = Math.floor(posLat);
   const latM = (posLat - latDf) * 60;
@@ -190,12 +202,6 @@ const populateFromDec = function(lat, lon) {
   const latS = (latM - latMf) * 60;
   const latDir = lat > 0 ? 'N' : 'S';
 
-  const posLon = Math.abs(lon);
-  const lonDf = Math.floor(posLon);
-  const lonM = (posLon - lonDf) * 60;
-  const lonMf = Math.floor(lonM);
-  const lonS = (lonM - lonMf) * 60;
-  const lonDir = lon > 0 ? 'E' : 'W';
 
   showDms(lonDf, lonMf, lonS, lonDir, latDf, latMf, latS, latDir);
 
@@ -243,7 +249,6 @@ const tryDms = function(text) {
   const gpsDmsRe = /(\d+)\s+degrees?\s+(\d+)\s+minutes?\s+([\d.]+)\s+seconds?\s+(north|south)\s+(\d+)\s+degrees?\s+(\d+)\s+minutes?\s+([\d.]+)\s+seconds?\s+(east|west)/;
   const found = text.match(gpsDmsRe);
   if (found) {
-    console.log(found);
     populateFromDms(
       parseInt(found[1]),
       parseInt(found[2]),
@@ -263,7 +268,6 @@ const tryW3w = function(text) {
   const re = /(\w+)\s+(\w+)\s+(\w+)/;
   const found = text.match(re);
   if (found) {
-    console.log(found);
     populateFromW3w(found[1], found[2], found[3])
   }
   return found;

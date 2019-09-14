@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <title>Main</title>
     <link rel="stylesheet" href="main.css">
+    <link rel="stylesheet" href="https://js.arcgis.com/4.12/esri/themes/light/main.css">
+    <script src="https://js.arcgis.com/4.12/"></script>
   </head>
   <body>
     <div id="info" style="visibility: visible;">
@@ -45,7 +47,7 @@
 
     <hr/>
 
-    <button onclick="populateTest('38.2383283 -0.234432')">Dec</button>
+    <button onclick="populateTest('-3.91583 53.17278')">Dec</button>
     <button onclick="populateTest('38 degrees 3 minutes 2.3 seconds north 5 degrees 62 minutes 22.3 seconds east')">Dms</button>
     <button onclick="populateTest('pitch knowledge pending')">w3w</button>
 
@@ -76,9 +78,11 @@
       <span id="w3w-3"></span>
     </div>
 
-    <h2>Message</h2>
-    <p id="message">ABC</p>
+    <div id="viewDiv"></div>
 
-    <script id="app" src="app.js?g"></script>
+    <p id="message" style="border: 1px solid red; display:none"></p>
+
+    <script id="app" src="app.js"></script>
+    <script id="app" src="map.js"></script>
   </body>
 </html>
