@@ -1,6 +1,17 @@
-#viewDiv {
-  padding: 0;
-  margin: 0;
-  height: 500px;
-  width: 500px;
+html {
+  font-family: sans-serif;
+  font-size: 40px;
+}
+
+input {
+  border: 1px solid black;
+  font-size: 40px;
+}
+
+button {
+  font-size: 40px;
+  background: #ddd;
+  border: 1px solid black;
+  border-radius: 3px;
+  margin: 0 5px 0 5px;
 }
