@@ -1,6 +1,7 @@
 module Main exposing (main)
 
 import Browser
+import Regex
 import Types exposing (..)
 import View
 
@@ -51,6 +52,18 @@ convertInput : Model -> Model
 convertInput model =
     if model.userInput == "" then
         { model | message = "" }
-
     else
-        { model | message = "Input not recognised yet" }
+        let
+            posDecRegex : Regex.Regex
+            posDecRegex =
+                Maybe.withDefault Regex.never <|
+                    Regex.fromString "([-0-9.])\\s+,\\s+([-0-9.]))"
+
+            matches : List Regex.Match
+            matches =
+                Regex.find posDecRegex model.userInput
+        in
+            if List.length matches == 2 then
+                { model | message = "OK" }
+            else
+                { model | message = "Input not recognised yet" }
