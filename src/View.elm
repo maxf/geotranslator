@@ -47,15 +47,19 @@ renderPosDms model =
         [ text
             ("lon/lat (dms): "
                 ++ fromFloat model.positionDms.lon.degrees
-                ++ "°"
+                ++ "° "
                 ++ fromFloat model.positionDms.lon.minutes
-                ++ "'"
+                ++ "' "
                 ++ fromFloat model.positionDms.lon.seconds
+                ++ " "
+                ++ model.positionDms.lon.direction
                 ++ ", "
                 ++ fromFloat model.positionDms.lat.degrees
-                ++ "°"
+                ++ "° "
                 ++ fromFloat model.positionDms.lat.minutes
-                ++ "'"
+                ++ "' "
                 ++ fromFloat model.positionDms.lat.seconds
+                ++ " "
+                ++ model.positionDms.lat.direction
             )
         ]

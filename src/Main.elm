@@ -40,12 +40,18 @@ init =
             , message = ""
             , positionDec = { lon = 0, lat = 0 }
             , positionDms =
-                { lon = { degrees = 0, minutes = 0, seconds = 0 }
-                , lat = { degrees = 0, minutes = 0, seconds = 0 }
+                { lon = { degrees = 0, minutes = 0, seconds = 0, direction = "" }
+                , lat = { degrees = 0, minutes = 0, seconds = 0, direction = "" }
                 }
             }
     in
     ( initialModel, Cmd.none )
+
+
+posDecRegex : Regex.Regex
+posDecRegex =
+    Maybe.withDefault Regex.never <|
+        Regex.fromString "(-?[0-9.]+)\\s*,\\s*(-?[0-9.]+)"
 
 
 convertInput : Model -> Model
@@ -54,16 +60,58 @@ convertInput model =
         { model | message = "" }
     else
         let
-            posDecRegex : Regex.Regex
-            posDecRegex =
-                Maybe.withDefault Regex.never <|
-                    Regex.fromString "([-0-9.])\\s+,\\s+([-0-9.]))"
-
             matches : List Regex.Match
             matches =
-                Regex.find posDecRegex model.userInput
+                Regex.find posDecRegex model.userInput |> Debug.log ">"
         in
-            if List.length matches == 2 then
-                { model | message = "OK" }
-            else
-                { model | message = "Input not recognised yet" }
+            case matches of
+                [match] ->
+                    case match.submatches of
+                        [ Just lonString, Just latString ] ->
+                            let
+                                lon = String.toFloat lonString |> Maybe.withDefault 0
+                                lat = String.toFloat latString |> Maybe.withDefault 0
+                            in
+                                if lon >= -180 && lon <= 180 && lat >= -90 && lat <= 90 then
+                                    modelFromDec "OK" lon lat model
+                                else
+                                    modelFromDec "Outside limits" 0 0 model
+                        _ ->
+                            modelFromDec "Bad regex matches" 0 0 model
+                _ ->
+                    modelFromDec "Input not recognised" 0 0 model
+
+
+modelFromDec : String -> Float -> Float -> Model -> Model
+modelFromDec message lon lat model =
+    { model
+        | message = message
+        , positionDec = { lon = lon, lat = lat }
+    } |> convertFromDec
+
+-- calculate all geolocation schemes from lat/lon deciman
+convertFromDec : Model -> Model
+convertFromDec model =
+    let
+        posLon = abs model.positionDec.lon
+        lonDf = floor posLon |> toFloat
+        lonM = (posLon - lonDf) * 60
+        lonMf = floor lonM |> toFloat
+        lonS = (lonM - lonMf) * 60
+        lonSr = toFloat (round (lonS * 1000)) / 1000
+        lonDir = if model.positionDec.lon > 0 then "E" else "W"
+
+        posLat = abs model.positionDec.lat
+        latDf = floor posLat |> toFloat
+        latM = (posLat - latDf) * 60
+        latMf = floor latM |> toFloat
+        latS = (latM - latMf) * 60
+        latSr = toFloat (round (latS * 1000)) / 1000
+        latDir = if model.positionDec.lat > 0 then "N" else "S"
+    in
+        { model
+              | positionDms =
+                  { lon = { degrees = lonDf, minutes = lonMf, seconds = lonSr, direction = lonDir }
+                  , lat = { degrees = latDf, minutes = latMf, seconds = latSr, direction = latDir }
+                  }
+        }
