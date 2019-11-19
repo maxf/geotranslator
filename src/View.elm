@@ -15,6 +15,7 @@ render model =
         , div [] [ text model.message ]
         , renderPosDec model
         , renderPosDms model
+        , renderPosW3W model
         ]
 
 
@@ -58,6 +59,15 @@ renderPosDec model =
         ]
 
 
+renderPosW3W : Model -> Html Msg
+renderPosW3W model =
+    div []
+        [ "what3words: "
+            ++ String.join " " model.positionW3W
+            |> text
+        ]
+
+
 renderPosDms : Model -> Html Msg
 renderPosDms model =
     div []
@@ -68,7 +78,7 @@ renderPosDms model =
                 ++ fromFloat model.positionDms.lon.minutes
                 ++ "' "
                 ++ fromFloat model.positionDms.lon.seconds
-                ++ " "
+                ++ "\" "
                 ++ model.positionDms.lon.direction
                 ++ ", "
                 ++ fromFloat model.positionDms.lat.degrees
@@ -76,7 +86,7 @@ renderPosDms model =
                 ++ fromFloat model.positionDms.lat.minutes
                 ++ "' "
                 ++ fromFloat model.positionDms.lat.seconds
-                ++ " "
+                ++ "\" "
                 ++ model.positionDms.lat.direction
             )
         ]

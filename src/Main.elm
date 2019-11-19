@@ -42,11 +42,15 @@ init =
             { userInput = ""
             , message = ""
             , inputIsValid = False
-            , positionDec = { lon = 0, lat = 0 }
+            , positionDec =
+                  { lon = 0
+                  , lat = 0
+                  }
             , positionDms =
                 { lon = DmsCoord 0 0 0 ""
                 , lat = DmsCoord 0 0 0 ""
                 }
+            , positionW3W = []
             }
     in
     ( initialModel, Cmd.none )
