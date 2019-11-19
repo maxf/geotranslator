@@ -8,13 +8,20 @@ type Msg
     | UserEnteredCommaSymbol
 
 
+
+type alias DecCoord =
+    Float
+
+type alias DmsCoord =
+    { degrees : Float, minutes : Float, seconds : Float, direction : String }
+
 type alias Model =
     { userInput : String
     , message : String
     , inputIsValid : Bool
-    , positionDec : { lon : Float, lat : Float }
+    , positionDec : { lat: DecCoord, lon: DecCoord }
     , positionDms :
-        { lon : { degrees : Float, minutes : Float, seconds : Float, direction : String }
-        , lat : { degrees : Float, minutes : Float, seconds : Float, direction : String }
+        { lon : DmsCoord
+        , lat : DmsCoord
         }
     }
