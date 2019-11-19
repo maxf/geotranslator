@@ -1,4 +1,4 @@
-module Main exposing (main)
+port module Main exposing (main)
 
 import Browser
 import Regex
@@ -16,6 +16,9 @@ main =
         }
 
 
+port focusOn : String -> Cmd msg
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
@@ -23,13 +26,13 @@ update msg model =
             ( { model | userInput = value } |> convertInput, Cmd.none )
 
         UserEnteredDegreesSymbol ->
-            ( { model | userInput = model.userInput ++ "° " }, Cmd.none )
+            ( { model | userInput = model.userInput ++ "° " }, focusOn "input" )
 
         UserEnteredMinutesSymbol ->
-            ( { model | userInput = model.userInput ++ "' " }, Cmd.none )
+            ( { model | userInput = model.userInput ++ "' " }, focusOn "input" )
 
         UserEnteredCommaSymbol ->
-            ( { model | userInput = model.userInput ++ ", " }, Cmd.none )
+            ( { model | userInput = model.userInput ++ ", " }, focusOn "input" )
 
 
 init : ( Model, Cmd Msg )
@@ -182,34 +185,52 @@ modelFromDec valid message lon lat model =
         |> convertFromDec
 
 
-
-
 roundTo : Int -> Float -> Float
 roundTo n x =
-    toFloat (round (x * (toFloat n))) / (toFloat n)
+    toFloat (round (x * toFloat n)) / toFloat n
+
+
 
 -- calculate all geolocation schemes from lat/lon dms
+
 
 convertFromDms : Model -> Model
 convertFromDms model =
     let
         lonAbs =
-            model.positionDms.lon.degrees + model.positionDms.lon.minutes/60 + model.positionDms.lon.seconds/3600
+            model.positionDms.lon.degrees
+                + model.positionDms.lon.minutes
+                / 60
+                + model.positionDms.lon.seconds
+                / 3600
                 |> roundTo 100000
 
         latAbs =
-            model.positionDms.lat.degrees + model.positionDms.lat.minutes/60 + model.positionDms.lat.seconds/3600
+            model.positionDms.lat.degrees
+                + model.positionDms.lat.minutes
+                / 60
+                + model.positionDms.lat.seconds
+                / 3600
                 |> roundTo 100000
 
         lon =
-            if model.positionDms.lon.direction == "W" then -lonAbs else lonAbs
+            if model.positionDms.lon.direction == "W" then
+                -lonAbs
+
+            else
+                lonAbs
 
         lat =
-            if model.positionDms.lat.direction == "S" then -latAbs else latAbs
+            if model.positionDms.lat.direction == "S" then
+                -latAbs
+
+            else
+                latAbs
     in
-        { model
-            | positionDec = { lon = lon, lat = lat }
-        }
+    { model
+        | positionDec = { lon = lon, lat = lat }
+    }
+
 
 
 -- calculate all geolocation schemes from lat/lon decimal

@@ -9,7 +9,13 @@
   <body>
     <div id="elm"></div>
     <script>
-     Elm.Main.init({ node: document.getElementById("elm") });
+     const app = Elm.Main.init({ node: document.getElementById("elm") });
+
+     app.ports.focusOn.subscribe(data => {
+       document.getElementById('input').focus()
+     });
+
+
     </script>
   </body>
 </html>
