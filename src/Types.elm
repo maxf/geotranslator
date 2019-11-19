@@ -11,9 +11,10 @@ type Msg
 type alias Model =
     { userInput : String
     , message : String
+    , inputIsValid : Bool
     , positionDec : { lon : Float, lat : Float }
     , positionDms :
-        { lon : { degrees : Float, minutes : Float, seconds : Float }
-        , lat : { degrees : Float, minutes : Float, seconds : Float }
+        { lon : { degrees : Float, minutes : Float, seconds : Float, direction : String }
+        , lat : { degrees : Float, minutes : Float, seconds : Float, direction : String }
         }
     }

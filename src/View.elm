@@ -20,9 +20,26 @@ render model =
 
 renderInputBox : Model -> Html Msg
 renderInputBox model =
+    let
+        inputClass =
+            if model.userInput == "" then
+                ""
+
+            else if model.inputIsValid then
+                "validInput"
+
+            else
+                "invalidInput"
+    in
     div []
         [ label [ for "input" ] [ text "Type anything " ]
-        , input [ id "input", onInput UserTyped, value model.userInput ] []
+        , input
+            [ id "input"
+            , onInput UserTyped
+            , value model.userInput
+            , class inputClass
+            ]
+            []
         , button [ onClick UserEnteredDegreesSymbol ] [ text "°" ]
         , button [ onClick UserEnteredMinutesSymbol ] [ text "'" ]
         , button [ onClick UserEnteredCommaSymbol ] [ text "," ]
@@ -47,15 +64,19 @@ renderPosDms model =
         [ text
             ("lon/lat (dms): "
                 ++ fromFloat model.positionDms.lon.degrees
-                ++ "°"
+                ++ "° "
                 ++ fromFloat model.positionDms.lon.minutes
-                ++ "'"
+                ++ "' "
                 ++ fromFloat model.positionDms.lon.seconds
+                ++ " "
+                ++ model.positionDms.lon.direction
                 ++ ", "
                 ++ fromFloat model.positionDms.lat.degrees
-                ++ "°"
+                ++ "° "
                 ++ fromFloat model.positionDms.lat.minutes
-                ++ "'"
+                ++ "' "
                 ++ fromFloat model.positionDms.lat.seconds
+                ++ " "
+                ++ model.positionDms.lat.direction
             )
         ]

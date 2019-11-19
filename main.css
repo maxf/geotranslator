@@ -4,9 +4,19 @@ html {
 }
 
 input {
-  border: 1px solid black;
+  border: 5px solid black;
   font-size: 40px;
 }
+
+
+input.validInput {
+  border: 5px solid green;
+}
+
+input.invalidInput {
+  border: 5px solid red;
+}
+
 
 button {
   font-size: 40px;
