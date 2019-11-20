@@ -43,14 +43,14 @@ init =
             , message = ""
             , inputIsValid = False
             , positionDec =
-                  { lon = 0
-                  , lat = 0
-                  }
+                { lon = 0
+                , lat = 0
+                }
             , positionDms =
                 { lon = DmsCoord 0 0 0 ""
                 , lat = DmsCoord 0 0 0 ""
                 }
-            , positionW3W = []
+            , positionW3w = []
             }
     in
     ( initialModel, Cmd.none )
@@ -166,7 +166,43 @@ convertInputTryDms model =
                     modelFromDms False "Bad DMS regex matches" (DmsCoord 0 0 0 "W") (DmsCoord 0 0 0 "N") model
 
         _ ->
-            modelFromDms False "No DMS recognised" (DmsCoord 0 0 0 "W") (DmsCoord 0 0 0 "N") model
+            convertInputTryW3w model
+
+
+posW3wRegex : Regex.Regex
+posW3wRegex =
+    Maybe.withDefault Regex.never <|
+        Regex.fromString "^\\s*([a-zA-Z]+)\\s+([a-zA-Z]+)\\s+([a-zA-Z]+)\\s*$"
+
+
+convertInputTryW3w : Model -> Model
+convertInputTryW3w model =
+    let
+        matches : List Regex.Match
+        matches =
+            Regex.find posW3wRegex model.userInput
+    in
+    case matches of
+        [ match ] ->
+            case match.submatches of
+                [ Just word1, Just word2, Just word3 ] ->
+                    modelFromW3w True "Found W3W" [ word1, word2, word3 ] model
+
+                _ ->
+                    modelFromW3w False "Bad W3W regexp matches" [ "", "", "" ] model
+
+        _ ->
+            modelFromW3w False "No W3W regexp matches" [ "", "", "" ] model
+
+
+modelFromW3w : Bool -> String -> List String -> Model -> Model
+modelFromW3w valid message words model =
+    { model
+        | message = message
+        , inputIsValid = valid
+        , positionW3w = words
+    }
+        |> convertFromW3w
 
 
 modelFromDms : Bool -> String -> DmsCoord -> DmsCoord -> Model -> Model
@@ -299,3 +335,10 @@ convertFromDec model =
             , lat = DmsCoord latDf latMf latSr latDir
             }
     }
+
+-- calculate all geolocation schemes from what3words
+
+
+convertFromW3w : Model -> Model
+convertFromW3w model =
+    model

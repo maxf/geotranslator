@@ -29,5 +29,5 @@ type alias Model =
         { lon : DmsCoord
         , lat : DmsCoord
         }
-    , positionW3W : List String
+    , positionW3w : List String
     }

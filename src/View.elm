@@ -15,7 +15,7 @@ render model =
         , div [] [ text model.message ]
         , renderPosDec model
         , renderPosDms model
-        , renderPosW3W model
+        , renderPosW3w model
         ]
 
 
@@ -59,11 +59,11 @@ renderPosDec model =
         ]
 
 
-renderPosW3W : Model -> Html Msg
-renderPosW3W model =
+renderPosW3w : Model -> Html Msg
+renderPosW3w model =
     div []
         [ "what3words: "
-            ++ String.join " " model.positionW3W
+            ++ String.join " " model.positionW3w
             |> text
         ]
 
