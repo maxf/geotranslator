@@ -172,7 +172,7 @@ convertInputTryDms model =
 posW3wRegex : Regex.Regex
 posW3wRegex =
     Maybe.withDefault Regex.never <|
-        Regex.fromString "^\\s*([a-zA-Z]+)\\s+([a-zA-Z]+)\\s+([a-zA-Z]+)\\s*$"
+        Regex.fromString "^\\s*([a-zA-Z]+)[^a-zA-Z]+([a-zA-Z]+)[^a-zA-Z]+([a-zA-Z]+)\\s*$"
 
 
 convertInputTryW3w : Model -> Model
