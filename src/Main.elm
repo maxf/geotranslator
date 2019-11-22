@@ -22,31 +22,36 @@ main =
 port focusOn : String -> Cmd msg
 
 
+withNewUserInput : String -> Model -> Model
+withNewUserInput value model =
+    { model
+        | userInput = value
+        , positionDec = Nothing
+        , positionDms = Nothing
+        , positionW3w = Nothing
+        , parsedW3w = Nothing
+    }
+        |> convertInput
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         UserTyped value ->
             let
                 newModel =
-                    { model
-                        | userInput = value
-                        , positionDec = Nothing
-                        , positionDms = Nothing
-                        , positionW3w = Nothing
-                        , parsedW3w = Nothing
-                    }
-                        |> convertInput
+                    model |> withNewUserInput value
             in
             ( newModel, fetchRemoteCoords newModel )
 
         UserEnteredDegreesSymbol ->
-            ( { model | userInput = model.userInput ++ "° " }, focusOn "input" )
+            ( model |> withNewUserInput (model.userInput ++ "° "), focusOn "input" )
 
         UserEnteredMinutesSymbol ->
-            ( { model | userInput = model.userInput ++ "' " }, focusOn "input" )
+            ( model |> withNewUserInput (model.userInput ++ "' "), focusOn "input" )
 
         UserEnteredCommaSymbol ->
-            ( { model | userInput = model.userInput ++ ", " }, focusOn "input" )
+            ( model |> withNewUserInput (model.userInput ++ ", "), focusOn "input" )
 
         GotW3w (Err _) ->
             ( { model | message = "w3w api error" }, Cmd.none )
@@ -94,7 +99,7 @@ posDecRegex =
 posDmsRegex : Regex.Regex
 posDmsRegex =
     Maybe.withDefault Regex.never <|
-        Regex.fromString "^\\s*([0-9]+)°\\s*([0-9]+)'\\s*([0-9.]+)\"?\\s*([EW])\\s*,\\s*([0-9]+)°\\s*([0-9]+)'\\s*([0-9.]+)\"?\\s*([NS])\\s*$"
+        Regex.fromString "^\\s*([0-9]+)°\\s*([0-9]+)'\\s*([0-9.]+)\"?\\s*([NS])\\s*,\\s*([0-9]+)°\\s*([0-9]+)'\\s*([0-9.]+)\"?\\s*([WE])\\s*$"
 
 
 convertInput : Model -> Model
@@ -295,7 +300,7 @@ fetchRemoteCoords model =
                                         w3wDecoder
                             in
                             Http.get
-                                { url = "https://api.what3words.com/v3/convert-to-3wa?coordinates=" ++ lonS ++ "%2C" ++ latS ++ "&key="++model.w3wApiKey
+                                { url = "https://api.what3words.com/v3/convert-to-3wa?coordinates=" ++ lonS ++ "%2C" ++ latS ++ "&key=" ++ model.w3wApiKey
                                 , expect = Http.expectJson GotW3w decoder
                                 }
 
@@ -310,7 +315,7 @@ fetchRemoteCoords model =
                                 |> requiredAt [ "coordinates", "lat" ] float
                     in
                     Http.get
-                        { url = "https://api.what3words.com/v3/convert-to-coordinates?key="++model.w3wApiKey++"&words=" ++ words ++ "&format=json"
+                        { url = "https://api.what3words.com/v3/convert-to-coordinates?key=" ++ model.w3wApiKey ++ "&words=" ++ words ++ "&format=json"
                         , expect = Http.expectJson GotW3wCoords decoder
                         }
 
