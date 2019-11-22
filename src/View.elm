@@ -33,17 +33,20 @@ renderInputBox model =
                 "invalidInput"
     in
     div []
-        [ label [ for "input" ] [ text "Type anything " ]
-        , input
+        [ input
             [ id "input"
             , onInput UserTyped
             , value model.userInput
             , class inputClass
+            , placeholder "Type anything"
             ]
             []
         , button [ onClick UserEnteredDegreesSymbol ] [ text "°" ]
         , button [ onClick UserEnteredMinutesSymbol ] [ text "'" ]
         , button [ onClick UserEnteredCommaSymbol ] [ text "," ]
+        , p [ class "example-input" ] [ text "for instance: 51.128172,-3.465142" ]
+        , p [ class "example-input" ] [ text "or: 51° 7' 41.4192\" N, 3° 27' 54.5112\" W" ]
+        , p [ class "example-input" ] [ text "or: incomes decide bronze" ]
         ]
 
 
@@ -53,13 +56,16 @@ renderPosDec model =
         posString =
             case model.positionDec of
                 Nothing ->
-                    [ "n/a", "n/a" ]
+                    []
 
                 Just pos ->
                     [ fromFloat pos.lon, fromFloat pos.lat ]
     in
     div []
-        [ "lon/lat (decimal): " ++ String.join ", " posString |> text ]
+        [ span [ class "result-header" ] [ text "lon/lat (decimal)" ]
+        , div [ class "result" ]
+            [ String.join ", " posString |> text ]
+        ]
 
 
 renderPosW3w : Model -> Html Msg
@@ -68,13 +74,15 @@ renderPosW3w model =
         w3wString =
             case model.positionW3w of
                 Nothing ->
-                    "n/a"
+                    ""
 
                 Just words ->
                     String.join "." words
     in
     div []
-        [ "what3words: " ++ w3wString |> text ]
+        [ span [ class "result-header" ] [ text "what3words" ]
+        , div [ class "result" ] [ text w3wString ]
+        ]
 
 
 renderPosDms : Model -> Html Msg
@@ -83,7 +91,7 @@ renderPosDms model =
         pos =
             case model.positionDms of
                 Nothing ->
-                    "n/a"
+                    ""
 
                 Just dms ->
                     fromFloat dms.lon.degrees
@@ -103,4 +111,6 @@ renderPosDms model =
                         ++ dms.lat.direction
     in
     div []
-        [ "lon/lat (dms): " ++ pos |> text ]
+        [ span [ class "result-header" ] [ text "lon/lat (DMS)" ]
+        , div [ class "result" ] [ text pos ]
+        ]

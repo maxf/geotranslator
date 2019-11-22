@@ -1,13 +1,21 @@
 html {
   font-family: sans-serif;
-  font-size: 40px;
+  font-size: 19px;
 }
 
 input {
   border: 5px solid black;
+  border-radius: 10px;
   font-size: 40px;
+  margin: 10px 0 10px 0;
+  width: 75%;
+
 }
 
+.example-input {
+  margin: 0;
+  color: #999;
+}
 
 input.validInput {
   border: 5px solid green;
@@ -17,11 +25,22 @@ input.invalidInput {
   border: 5px solid red;
 }
 
+.result {
+  font-size: 40px;
+  background: #5d5;
+  border: 1px solid black;
+  border-radius: 10px;
+  padding: 5px;
+  margin-bottom: 15px;
+  height: 45px;
+}
+
 
 button {
   font-size: 40px;
   background: #ddd;
   border: 1px solid black;
   border-radius: 3px;
-  margin: 0 5px 0 5px;
+  margin: 2px; 5px 0 5px;
+  width: 1em;
 }
