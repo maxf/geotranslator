@@ -16,7 +16,29 @@ render model =
         , renderPosDec model
         , renderPosDms model
         , renderPosW3w model
+        , renderMapButton model.positionDec
         ]
+
+
+renderMapButton : Maybe PositionDec -> Html Msg
+renderMapButton pos =
+    case pos of
+        Nothing ->
+            div [ class "map-button map-button-disabled" ]
+                [ span
+                    [ class "map-button-link" ]
+                    [ "Open in Google Maps" |> text ]
+                ]
+
+        Just { lat, lon } ->
+            div [ class "map-button" ]
+                [ a
+                    [ class "map-button-link"
+                    , target "_blank"
+                    , href ("https://www.google.com/maps/search/?api=1&query=" ++ fromFloat lat ++ "," ++ fromFloat lon)
+                    ]
+                    [ "Open in Google Maps" |> text ]
+                ]
 
 
 renderInputBox : Model -> Html Msg
@@ -32,7 +54,7 @@ renderInputBox model =
             else
                 "invalidInput"
     in
-    div []
+    div [ class "input-area" ]
         [ input
             [ id "input"
             , onInput UserTyped
