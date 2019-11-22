@@ -1,15 +1,18 @@
 port module Main exposing (main)
 
 import Browser
+import Http
+import Json.Decode as Decode exposing (Decoder, float, map, string)
+import Json.Decode.Pipeline exposing (required, requiredAt)
 import Regex
 import Types exposing (..)
 import View
 
 
-main : Program () Model Msg
+main : Program String Model Msg
 main =
     Browser.element
-        { init = \_ -> init
+        { init = init
         , view = View.render
         , update = update
         , subscriptions = \_ -> Sub.none
@@ -23,7 +26,18 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         UserTyped value ->
-            ( { model | userInput = value } |> convertInput, Cmd.none )
+            let
+                newModel =
+                    { model
+                        | userInput = value
+                        , positionDec = Nothing
+                        , positionDms = Nothing
+                        , positionW3w = Nothing
+                        , parsedW3w = Nothing
+                    }
+                        |> convertInput
+            in
+            ( newModel, fetchRemoteCoords newModel )
 
         UserEnteredDegreesSymbol ->
             ( { model | userInput = model.userInput ++ "° " }, focusOn "input" )
@@ -34,23 +48,38 @@ update msg model =
         UserEnteredCommaSymbol ->
             ( { model | userInput = model.userInput ++ ", " }, focusOn "input" )
 
+        GotW3w (Err _) ->
+            ( { model | message = "w3w api error" }, Cmd.none )
 
-init : ( Model, Cmd Msg )
-init =
+        GotW3w (Ok words) ->
+            ( { model | positionW3w = Just words }, Cmd.none )
+
+        GotW3wCoords (Err _) ->
+            ( { model | message = "w3w api error when fetching coords" }, Cmd.none )
+
+        GotW3wCoords (Ok dec) ->
+            ( { model
+                | message = ""
+                , positionDec = Just dec
+                , positionDms = Just (dec2dms dec)
+                , positionW3w = model.parsedW3w
+              }
+            , fetchRemoteCoords model
+            )
+
+
+init : String -> ( Model, Cmd Msg )
+init flags =
     let
         initialModel =
             { userInput = ""
             , message = ""
             , inputIsValid = False
-            , positionDec =
-                { lon = 0
-                , lat = 0
-                }
-            , positionDms =
-                { lon = DmsCoord 0 0 0 ""
-                , lat = DmsCoord 0 0 0 ""
-                }
-            , positionW3w = []
+            , parsedW3w = Nothing
+            , positionDec = Nothing
+            , positionDms = Nothing
+            , positionW3w = Nothing
+            , w3wApiKey = flags
             }
     in
     ( initialModel, Cmd.none )
@@ -186,159 +215,104 @@ convertInputTryW3w model =
         [ match ] ->
             case match.submatches of
                 [ Just word1, Just word2, Just word3 ] ->
-                    modelFromW3w True "Found W3W" [ word1, word2, word3 ] model
+                    modelFromW3w True "Found W3W" (Just [ word1, word2, word3 ]) model
 
                 _ ->
-                    modelFromW3w False "Bad W3W regexp matches" [ "", "", "" ] model
+                    modelFromW3w False "Bad W3W regexp matches" Nothing model
 
         _ ->
-            modelFromW3w False "No W3W regexp matches" [ "", "", "" ] model
+            modelFromW3w False "No W3W regexp matches" Nothing model
 
 
-modelFromW3w : Bool -> String -> List String -> Model -> Model
+modelFromW3w : Bool -> String -> Maybe (List String) -> Model -> Model
 modelFromW3w valid message words model =
     { model
         | message = message
+        , parsedW3w = words
         , inputIsValid = valid
-        , positionW3w = words
     }
-        |> convertFromW3w
 
 
 modelFromDms : Bool -> String -> DmsCoord -> DmsCoord -> Model -> Model
 modelFromDms valid message lon lat model =
+    let
+        dms =
+            PositionDms lon lat
+    in
     { model
         | message = message
         , inputIsValid = valid
-        , positionDms = { lon = lon, lat = lat }
+        , positionDms = Just dms
+        , positionDec = Just (dms2dec dms)
     }
-        |> convertFromDms
 
 
 modelFromDec : Bool -> String -> DecCoord -> DecCoord -> Model -> Model
 modelFromDec valid message lon lat model =
+    let
+        dec =
+            PositionDec lon lat
+    in
     { model
         | message = message
         , inputIsValid = valid
-        , positionDec = { lon = lon, lat = lat }
-    }
-        |> convertFromDec
-
-
-roundTo : Int -> Float -> Float
-roundTo n x =
-    toFloat (round (x * toFloat n)) / toFloat n
-
-
-
--- calculate all geolocation schemes from lat/lon dms
-
-
-convertFromDms : Model -> Model
-convertFromDms model =
-    let
-        lonAbs =
-            model.positionDms.lon.degrees
-                + model.positionDms.lon.minutes
-                / 60
-                + model.positionDms.lon.seconds
-                / 3600
-                |> roundTo 100000
-
-        latAbs =
-            model.positionDms.lat.degrees
-                + model.positionDms.lat.minutes
-                / 60
-                + model.positionDms.lat.seconds
-                / 3600
-                |> roundTo 100000
-
-        lon =
-            if model.positionDms.lon.direction == "W" then
-                -lonAbs
-
-            else
-                lonAbs
-
-        lat =
-            if model.positionDms.lat.direction == "S" then
-                -latAbs
-
-            else
-                latAbs
-    in
-    { model
-        | positionDec = { lon = lon, lat = lat }
+        , positionDec = Just dec
+        , positionDms = Just (dec2dms dec)
     }
 
 
-
--- calculate all geolocation schemes from lat/lon decimal
-
-
-convertFromDec : Model -> Model
-convertFromDec model =
-    let
-        posLon =
-            abs model.positionDec.lon
-
-        lonDf =
-            floor posLon |> toFloat
-
-        lonM =
-            (posLon - lonDf) * 60
-
-        lonMf =
-            floor lonM |> toFloat
-
-        lonS =
-            (lonM - lonMf) * 60
-
-        lonSr =
-            toFloat (round (lonS * 1000)) / 1000
-
-        lonDir =
-            if model.positionDec.lon > 0 then
-                "E"
-
-            else
-                "W"
-
-        posLat =
-            abs model.positionDec.lat
-
-        latDf =
-            floor posLat |> toFloat
-
-        latM =
-            (posLat - latDf) * 60
-
-        latMf =
-            floor latM |> toFloat
-
-        latS =
-            (latM - latMf) * 60
-
-        latSr =
-            toFloat (round (latS * 1000)) / 1000
-
-        latDir =
-            if model.positionDec.lat > 0 then
-                "N"
-
-            else
-                "S"
-    in
-    { model
-        | positionDms =
-            { lon = DmsCoord lonDf lonMf lonSr lonDir
-            , lat = DmsCoord latDf latMf latSr latDir
-            }
-    }
 
 -- calculate all geolocation schemes from what3words
 
 
-convertFromW3w : Model -> Model
-convertFromW3w model =
-    model
+w3wDecoder : Decoder W3Words
+w3wDecoder =
+    Decode.succeed W3Words
+        |> required "words" string
+
+
+fetchRemoteCoords : Model -> Cmd Msg
+fetchRemoteCoords model =
+    case model.positionW3w of
+        Nothing ->
+            case model.parsedW3w of
+                Nothing ->
+                    case model.positionDec of
+                        Nothing ->
+                            Cmd.none
+
+                        Just pos ->
+                            let
+                                lonS =
+                                    pos.lon |> String.fromFloat
+
+                                latS =
+                                    pos.lat |> String.fromFloat
+
+                                decoder =
+                                    Decode.map
+                                        (\s -> String.split "." s.words)
+                                        w3wDecoder
+                            in
+                            Http.get
+                                { url = "https://api.what3words.com/v3/convert-to-3wa?coordinates=" ++ lonS ++ "%2C" ++ latS ++ "&key="++model.w3wApiKey
+                                , expect = Http.expectJson GotW3w decoder
+                                }
+
+                Just parsedWords ->
+                    let
+                        words =
+                            String.join "." parsedWords
+
+                        decoder =
+                            Decode.succeed PositionDec
+                                |> requiredAt [ "coordinates", "lng" ] float
+                                |> requiredAt [ "coordinates", "lat" ] float
+                    in
+                    Http.get
+                        { url = "https://api.what3words.com/v3/convert-to-coordinates?key="++model.w3wApiKey++"&words=" ++ words ++ "&format=json"
+                        , expect = Http.expectJson GotW3wCoords decoder
+                        }
+
+        Just _ ->
+            Cmd.none

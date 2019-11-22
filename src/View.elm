@@ -49,44 +49,58 @@ renderInputBox model =
 
 renderPosDec : Model -> Html Msg
 renderPosDec model =
+    let
+        posString =
+            case model.positionDec of
+                Nothing ->
+                    [ "n/a", "n/a" ]
+
+                Just pos ->
+                    [ fromFloat pos.lon, fromFloat pos.lat ]
+    in
     div []
-        [ text
-            ("lon/lat (decimal): "
-                ++ fromFloat model.positionDec.lon
-                ++ ", "
-                ++ fromFloat model.positionDec.lat
-            )
-        ]
+        [ "lon/lat (decimal): " ++ String.join ", " posString |> text ]
 
 
 renderPosW3w : Model -> Html Msg
 renderPosW3w model =
+    let
+        w3wString =
+            case model.positionW3w of
+                Nothing ->
+                    "n/a"
+
+                Just words ->
+                    String.join "." words
+    in
     div []
-        [ "what3words: "
-            ++ String.join " " model.positionW3w
-            |> text
-        ]
+        [ "what3words: " ++ w3wString |> text ]
 
 
 renderPosDms : Model -> Html Msg
 renderPosDms model =
+    let
+        pos =
+            case model.positionDms of
+                Nothing ->
+                    "n/a"
+
+                Just dms ->
+                    fromFloat dms.lon.degrees
+                        ++ "° "
+                        ++ fromFloat dms.lon.minutes
+                        ++ "' "
+                        ++ fromFloat dms.lon.seconds
+                        ++ "\" "
+                        ++ dms.lon.direction
+                        ++ ", "
+                        ++ fromFloat dms.lat.degrees
+                        ++ "° "
+                        ++ fromFloat dms.lat.minutes
+                        ++ "' "
+                        ++ fromFloat dms.lat.seconds
+                        ++ "\" "
+                        ++ dms.lat.direction
+    in
     div []
-        [ text
-            ("lon/lat (dms): "
-                ++ fromFloat model.positionDms.lon.degrees
-                ++ "° "
-                ++ fromFloat model.positionDms.lon.minutes
-                ++ "' "
-                ++ fromFloat model.positionDms.lon.seconds
-                ++ "\" "
-                ++ model.positionDms.lon.direction
-                ++ ", "
-                ++ fromFloat model.positionDms.lat.degrees
-                ++ "° "
-                ++ fromFloat model.positionDms.lat.minutes
-                ++ "' "
-                ++ fromFloat model.positionDms.lat.seconds
-                ++ "\" "
-                ++ model.positionDms.lat.direction
-            )
-        ]
+        [ "lon/lat (dms): " ++ pos |> text ]
