@@ -31,6 +31,9 @@ renderStatus model =
         Failure error ->
             h2 [ class "error" ] [ "Error: " ++ error |> text ]
 
+        Success _ ->
+            h2 [] [ text "Tracking your location" ]
+
         _ ->
             text ""
 

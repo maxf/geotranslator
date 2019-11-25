@@ -37,17 +37,21 @@
        });
 
        app.ports.getCurrentLocation.subscribe(data => {
-         const success = position => app.ports.gotLocation.send({
-           lon: position.coords.longitude,
-           lat: position.coords.latitude,
-           error: ''
-         });
+         const success = position => {
+           app.ports.gotLocation.send({
+             lon: position.coords.longitude,
+             lat: position.coords.latitude,
+             error: ''
+           });
+         };
 
-         const error = error => app.ports.gotLocation.send({
-           lon: NaN,
-           lat: NaN,
-           error : error.message
-         });
+         const error = error => {
+           app.ports.gotLocation.send({
+             lon: NaN,
+             lat: NaN,
+             error : error.message
+           });
+         };
          navigator.geolocation.watchPosition(success, error);
        });
 
