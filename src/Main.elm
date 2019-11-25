@@ -116,7 +116,7 @@ init flags =
             , positionDms = Nothing
             , positionW3w = Nothing
             , w3wApiKey = flags
-            , viewType = FindLocation
+            , viewType = FindMe
             }
     in
     ( initialModel, Cmd.none )

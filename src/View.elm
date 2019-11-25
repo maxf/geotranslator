@@ -10,15 +10,44 @@ import Types exposing (..)
 render : Model -> Html Msg
 render model =
     div []
-        [ h1 [ onClick UserClickedSetFindLocation ] [ text "find a location" ]
-        , h1 [ onClick UserClickedSetFindMe ] [ text "find me" ]
+        [ renderTitle model.viewType
         , renderInputBox model
         , div [] [ text model.message ]
         , renderPosDec model
         , renderPosDms model
         , renderPosW3w model
         , renderMapButton model.positionDec
+        , renderSwitchViewButton model.viewType
         ]
+
+renderTitle : ViewType -> Html Msg
+renderTitle viewType =
+    case viewType of
+        FindMe ->
+            h1 [] [ text "My location" ]
+        FindLocation ->
+            h1 [] [ text "Find a location" ]
+
+
+renderSwitchViewButton : ViewType -> Html Msg
+renderSwitchViewButton viewType  =
+    case viewType of
+        FindMe ->
+            div [ class "switch-view-button"
+                , onClick UserClickedSetFindLocation
+                ]
+                [ span
+                    [ class "map-button-link" ]
+                    [ text "Find another location" ]
+                ]
+        FindLocation ->
+            div [ class "switch-view-button"
+                , onClick UserClickedSetFindMe
+                ]
+                [ span
+                    [ class "map-button-link" ]
+                    [ text "Find me" ]
+                ]
 
 
 renderMapButton : Maybe PositionDec -> Html Msg
@@ -79,9 +108,9 @@ renderFindLocationInput model =
             , placeholder "Type anything"
             ]
             []
-        , button [ onClick UserEnteredDegreesSymbol ] [ text "°" ]
-        , button [ onClick UserEnteredMinutesSymbol ] [ text "′" ]
-        , button [ onClick UserEnteredCommaSymbol ] [ text "," ]
+        , button [ class "symbol", onClick UserEnteredDegreesSymbol ] [ text "°" ]
+        , button [ class "symbol", onClick UserEnteredMinutesSymbol ] [ text "′" ]
+        , button [ class "symbol", onClick UserEnteredCommaSymbol ] [ text "," ]
         , p [ class "example-input" ] [ text "for instance: 51.128172,-3.465142" ]
         , p [ class "example-input" ] [ text "or: 51° 7′ 41.4192″ N, 3° 27′ 54.5112″ W" ]
         , p [ class "example-input" ] [ text "or: incomes decide bronze" ]

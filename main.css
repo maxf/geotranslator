@@ -46,6 +46,17 @@ input.invalidInput {
   line-height: 2;
 }
 
+.switch-view-button {
+  width: 40%;
+  height: 2em;
+  background: #66f;
+  border: 1px solid black;
+  border-radius: 10px;
+  padding: 5px;
+  text-align: center;
+  margin-top: 10px;
+}
+
 .map-button {
   width: 40%;
   height: 2em;
@@ -62,7 +73,7 @@ input.invalidInput {
   border: none;
 }
 
-button {
+button.symbol {
   font-size: 40px;
   background: #ddd;
   border: 1px solid black;
@@ -70,7 +81,6 @@ button {
   margin: 2px; 5px 0 5px;
   width: 1em;
 }
-
 
 .input-area {
   margin-bottom: 1em;
@@ -82,4 +92,9 @@ button {
 
 input::placeholder {
   color: #999;
+}
+
+h1 {
+  font-size: 32px;
+  margin-bottom: 0;
 }
