@@ -3,6 +3,7 @@ module Types exposing (..)
 import Http
 import Json.Encode
 
+
 type Msg
     = UserTyped String
     | UserEnteredDegreesSymbol
@@ -12,7 +13,7 @@ type Msg
     | GotW3wCoords (Result Http.Error PositionDec)
     | UserClickedSetFindMe
     | UserClickedSetFindLocation
-    | GotLocation { latitude: Float, longitude: Float }
+    | GotLocation PositionBrowser
 
 
 type alias W3Words =
@@ -43,9 +44,20 @@ type alias PositionW3w =
     List String
 
 
+type alias PositionBrowser =
+    { lon : Float, lat : Float, error : String }
+
+
 type ViewType
     = FindLocation
     | FindMe
+
+
+type RemoteData error value
+    = NotAsked
+    | Waiting
+    | Failure error
+    | Success value
 
 
 type alias Model =
@@ -58,6 +70,7 @@ type alias Model =
     , positionW3w : Maybe PositionW3w
     , w3wApiKey : String
     , viewType : ViewType
+    , browserLocation : RemoteData String PositionBrowser
     }
 
 
@@ -119,12 +132,17 @@ dec2dms dec =
     }
 
 
+
 -- sets number of decimals to show for approximately 10m accuracy
 -- https://en.wikipedia.org/wiki/Decimal_degrees#Precision
 
-precisionDec = 10000
-precisionDms = 100
 
+precisionDec =
+    10000
+
+
+precisionDms =
+    100
 
 
 dms2dec : PositionDms -> PositionDec

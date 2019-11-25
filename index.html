@@ -36,11 +36,19 @@
          document.getElementById('input').focus()
        });
 
-
        app.ports.getCurrentLocation.subscribe(data => {
-         navigator.geolocation.getCurrentPosition(function(position) {
-           app.ports.gotLocation.send(position.coords);
+         const success = position => app.ports.gotLocation.send({
+           lon: position.coords.longitude,
+           lat: position.coords.latitude,
+           error: ''
          });
+
+         const error = error => app.ports.gotLocation.send({
+           lon: NaN,
+           lat: NaN,
+           error : error.message
+         });
+         navigator.geolocation.watchPosition(success, error);
        });
 
      } else {

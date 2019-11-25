@@ -11,14 +11,26 @@ render : Model -> Html Msg
 render model =
     div []
         [ renderTitle model.viewType
+        , renderStatus model
         , renderInputBox model
-        , div [] [ text model.message ]
         , renderPosDec model
         , renderPosDms model
         , renderPosW3w model
         , renderMapButton model.positionDec
         , renderSwitchViewButton model.viewType
+        , div [] [ text model.message ]
         ]
+
+renderStatus : Model -> Html Msg
+renderStatus model =
+    case model.browserLocation of
+        Waiting ->
+            h2 [] [ text "Waiting for location" ]
+        Failure error ->
+            h2 [] [ "Error: " ++ error |> text ]
+        _ ->
+            text ""
+
 
 renderTitle : ViewType -> Html Msg
 renderTitle viewType =

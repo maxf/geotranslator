@@ -26,7 +26,7 @@ port focusOn : String -> Cmd msg
 port getCurrentLocation : String -> Cmd msg
 
 
-port gotLocation : ({latitude: Float, longitude: Float} -> msg) -> Sub msg
+port gotLocation : (PositionBrowser -> msg) -> Sub msg
 
 
 subscriptions : Model -> Sub Msg
@@ -88,20 +88,30 @@ update msg model =
             ( { model | viewType = FindLocation }, Cmd.none )
 
         UserClickedSetFindMe ->
-            ( { model | viewType = FindMe }, getCurrentLocation "" )
+            ( { model
+                | viewType = FindMe
+                , browserLocation = Waiting
+              }
+            , getCurrentLocation ""
+            )
 
         GotLocation location ->
-            let
-                newModel =
-                    modelFromDec
-                        True
-                        "Got decimal from geolocation API"
-                        (location.longitude |> roundTo 100000)
-                        (location.latitude |> roundTo 100000)
-                        model
-            in
-
-            ( newModel, fetchRemoteCoords newModel )
+            if location.error /= "" then
+                ( { model
+                      | browserLocation = Failure location.error
+                      , message = location.error
+                  }, Cmd.none )
+            else
+                let
+                    newModel =
+                        modelFromDec
+                            True
+                            "Got location from geolocation API"
+                            (location.lon |> roundTo 100000)
+                            (location.lat |> roundTo 100000)
+                            { model | browserLocation = Success location }
+                in
+                    ( newModel, fetchRemoteCoords newModel )
 
 
 init : String -> ( Model, Cmd Msg )
@@ -117,9 +127,10 @@ init flags =
             , positionW3w = Nothing
             , w3wApiKey = flags
             , viewType = FindMe
+            , browserLocation = Waiting
             }
     in
-    ( initialModel, Cmd.none )
+    ( initialModel, getCurrentLocation "" )
 
 
 posDecRegex : Regex.Regex

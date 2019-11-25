@@ -54,7 +54,8 @@ input.invalidInput {
   border-radius: 10px;
   padding: 5px;
   text-align: center;
-  margin-top: 10px;
+  margin: 10px 0 10px 0;
+  cursor: pointer;
 }
 
 .map-button {
