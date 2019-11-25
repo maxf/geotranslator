@@ -21,13 +21,16 @@ render model =
         , div [] [ text model.message ]
         ]
 
+
 renderStatus : Model -> Html Msg
 renderStatus model =
     case model.browserLocation of
         Waiting ->
             h2 [] [ text "Waiting for location" ]
+
         Failure error ->
-            h2 [] [ "Error: " ++ error |> text ]
+            h2 [ class "error" ] [ "Error: " ++ error |> text ]
+
         _ ->
             text ""
 
@@ -37,23 +40,27 @@ renderTitle viewType =
     case viewType of
         FindMe ->
             h1 [] [ text "My location" ]
+
         FindLocation ->
             h1 [] [ text "Find a location" ]
 
 
 renderSwitchViewButton : ViewType -> Html Msg
-renderSwitchViewButton viewType  =
+renderSwitchViewButton viewType =
     case viewType of
         FindMe ->
-            div [ class "switch-view-button"
+            div
+                [ class "switch-view-button"
                 , onClick UserClickedSetFindLocation
                 ]
                 [ span
                     [ class "map-button-link" ]
                     [ text "Find another location" ]
                 ]
+
         FindLocation ->
-            div [ class "switch-view-button"
+            div
+                [ class "switch-view-button"
                 , onClick UserClickedSetFindMe
                 ]
                 [ span

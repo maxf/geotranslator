@@ -10,7 +10,11 @@ input {
   margin: 10px 0 10px 0;
   width: 70%;
   padding: 5px;
+}
 
+.error {
+  color: white;
+  background: red;
 }
 
 .example-input {
