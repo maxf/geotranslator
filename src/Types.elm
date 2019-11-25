@@ -1,7 +1,7 @@
 module Types exposing (..)
 
 import Http
-
+import Json.Encode
 
 type Msg
     = UserTyped String
@@ -10,6 +10,9 @@ type Msg
     | UserEnteredCommaSymbol
     | GotW3w (Result Http.Error (List String))
     | GotW3wCoords (Result Http.Error PositionDec)
+    | UserClickedSetFindMe
+    | UserClickedSetFindLocation
+    | GotLocation { latitude: Float, longitude: Float }
 
 
 type alias W3Words =
@@ -35,8 +38,15 @@ type alias PositionDec =
 type alias PositionDms =
     { lon : DmsCoord, lat : DmsCoord }
 
+
 type alias PositionW3w =
     List String
+
+
+type ViewType
+    = FindLocation
+    | FindMe
+
 
 type alias Model =
     { userInput : String
@@ -47,6 +57,7 @@ type alias Model =
     , positionDms : Maybe PositionDms
     , positionW3w : Maybe PositionW3w
     , w3wApiKey : String
+    , viewType : ViewType
     }
 
 
@@ -69,7 +80,7 @@ dec2dms dec =
             (lonM - lonMf) * 60
 
         lonSr =
-            toFloat (round (lonS * 1000)) / 1000
+            lonS |> roundTo precisionDms
 
         lonDir =
             if dec.lon > 0 then
@@ -94,7 +105,7 @@ dec2dms dec =
             (latM - latMf) * 60
 
         latSr =
-            toFloat (round (latS * 1000)) / 1000
+            latS |> roundTo precisionDms
 
         latDir =
             if dec.lat > 0 then
@@ -108,6 +119,14 @@ dec2dms dec =
     }
 
 
+-- sets number of decimals to show for approximately 10m accuracy
+-- https://en.wikipedia.org/wiki/Decimal_degrees#Precision
+
+precisionDec = 10000
+precisionDms = 100
+
+
+
 dms2dec : PositionDms -> PositionDec
 dms2dec dms =
     let
@@ -117,7 +136,7 @@ dms2dec dms =
                 / 60
                 + dms.lon.seconds
                 / 3600
-                |> roundTo 100000
+                |> roundTo precisionDec
 
         latAbs =
             dms.lat.degrees
@@ -125,7 +144,7 @@ dms2dec dms =
                 / 60
                 + dms.lat.seconds
                 / 3600
-                |> roundTo 100000
+                |> roundTo precisionDec
 
         lon =
             if dms.lon.direction == "W" then

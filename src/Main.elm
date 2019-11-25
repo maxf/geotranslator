@@ -4,6 +4,7 @@ import Browser
 import Http
 import Json.Decode as Decode exposing (Decoder, float, map, string)
 import Json.Decode.Pipeline exposing (required, requiredAt)
+import Json.Encode exposing (Value)
 import Regex
 import Types exposing (..)
 import View
@@ -15,11 +16,22 @@ main =
         { init = init
         , view = View.render
         , update = update
-        , subscriptions = \_ -> Sub.none
+        , subscriptions = subscriptions
         }
 
 
 port focusOn : String -> Cmd msg
+
+
+port getCurrentLocation : String -> Cmd msg
+
+
+port gotLocation : ({latitude: Float, longitude: Float} -> msg) -> Sub msg
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    gotLocation GotLocation
 
 
 withNewUserInput : String -> Model -> Model
@@ -48,7 +60,7 @@ update msg model =
             ( model |> withNewUserInput (model.userInput ++ "° "), focusOn "input" )
 
         UserEnteredMinutesSymbol ->
-            ( model |> withNewUserInput (model.userInput ++ "' "), focusOn "input" )
+            ( model |> withNewUserInput (model.userInput ++ "′ "), focusOn "input" )
 
         UserEnteredCommaSymbol ->
             ( model |> withNewUserInput (model.userInput ++ ", "), focusOn "input" )
@@ -72,6 +84,25 @@ update msg model =
             , fetchRemoteCoords model
             )
 
+        UserClickedSetFindLocation ->
+            ( { model | viewType = FindLocation }, Cmd.none )
+
+        UserClickedSetFindMe ->
+            ( { model | viewType = FindMe }, getCurrentLocation "" )
+
+        GotLocation location ->
+            let
+                newModel =
+                    modelFromDec
+                        True
+                        "Got decimal from geolocation API"
+                        (location.longitude |> roundTo 100000)
+                        (location.latitude |> roundTo 100000)
+                        model
+            in
+
+            ( newModel, fetchRemoteCoords newModel )
+
 
 init : String -> ( Model, Cmd Msg )
 init flags =
@@ -85,6 +116,7 @@ init flags =
             , positionDms = Nothing
             , positionW3w = Nothing
             , w3wApiKey = flags
+            , viewType = FindLocation
             }
     in
     ( initialModel, Cmd.none )
@@ -99,7 +131,7 @@ posDecRegex =
 posDmsRegex : Regex.Regex
 posDmsRegex =
     Maybe.withDefault Regex.never <|
-        Regex.fromString "^\\s*([0-9]+)°\\s*([0-9]+)'\\s*([0-9.]+)\"?\\s*([NS])\\s*,\\s*([0-9]+)°\\s*([0-9]+)'\\s*([0-9.]+)\"?\\s*([WE])\\s*$"
+        Regex.fromString "^\\s*([0-9]+)°\\s*([0-9]+)[′']\\s*([0-9.]+)[\"″]?\\s*([NS])\\s*,\\s*([0-9]+)°\\s*([0-9]+)[′']\\s*([0-9.]+)[\"″]?\\s*([WE])\\s*$"
 
 
 convertInput : Model -> Model

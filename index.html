@@ -35,6 +35,14 @@
        app.ports.focusOn.subscribe(data => {
          document.getElementById('input').focus()
        });
+
+
+       app.ports.getCurrentLocation.subscribe(data => {
+         navigator.geolocation.getCurrentPosition(function(position) {
+           app.ports.gotLocation.send(position.coords);
+         });
+       });
+
      } else {
        document.write('missing w3w api key in the URL');
      }
