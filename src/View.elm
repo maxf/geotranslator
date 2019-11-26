@@ -149,10 +149,13 @@ renderPosDec model =
 
                 Just pos ->
                     div [ class "result" ]
-                        [ fromFloat pos.lon ++ ", " ++ fromFloat pos.lat |> text ]
+                        [ "Longitude: " ++ (fromFloat pos.lon) |> text
+                        , br [] []
+                        , "Latitude: " ++ (fromFloat pos.lat) |> text
+                        ]
     in
     div []
-        [ span [ class "result-header" ] [ text "lon/lat (decimal)" ]
+        [ span [ class "result-header" ] [ text "Decimal" ]
         , content
         ]
 
@@ -184,25 +187,30 @@ renderPosDms model =
 
                 Just dms ->
                     div [ class "result" ]
-                        [ fromFloat dms.lon.degrees
-                            ++ "° "
+                        [ "Longitude: " |> text
+                        , br [] []
+                        , fromFloat dms.lon.degrees
+                            ++ " degrees, "
                             ++ fromFloat dms.lon.minutes
-                            ++ "′ "
+                            ++ " minutes, "
                             ++ fromFloat dms.lon.seconds
-                            ++ "\" "
-                            ++ dms.lon.direction
-                            ++ ", "
-                            ++ fromFloat dms.lat.degrees
-                            ++ "° "
+                            ++ " seconds "
+                            ++ (if dms.lon.direction == "W" then "West" else "East")
+                              |> text
+                        , br [] []
+                        , "Latitude: " |> text
+                        , br [] []
+                        , fromFloat dms.lat.degrees
+                            ++ " degrees, "
                             ++ fromFloat dms.lat.minutes
-                            ++ "′ "
+                            ++ " minutes, "
                             ++ fromFloat dms.lat.seconds
-                            ++ "\" "
-                            ++ dms.lat.direction
+                            ++ " seconds "
+                            ++ (if dms.lat.direction == "N" then "North" else "South")
                             |> text
                         ]
     in
     div []
-        [ span [ class "result-header" ] [ text "lon/lat (DMS)" ]
+        [ span [ class "result-header" ] [ text "DMS" ]
         , pos
         ]

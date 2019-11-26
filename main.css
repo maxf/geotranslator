@@ -31,12 +31,12 @@ input.invalidInput {
 }
 
 .result {
-  font-size: 36px;
+  font-size: 4vw;
   background: #8d8;
   border: 1px solid black;
   padding: 5px;
   margin-bottom: 15px;
-  height: 45px;
+  min-height: 45px;
   text-align: center;
 }
 
