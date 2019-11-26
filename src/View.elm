@@ -10,8 +10,7 @@ import Types exposing (..)
 render : Model -> Html Msg
 render model =
     div []
-        [ renderTitle model.viewType
-        , renderStatus model
+        [ renderTitle model
         , renderInputBox model
         , renderPosDec model
         , renderPosDms model
@@ -38,11 +37,11 @@ renderStatus model =
             text ""
 
 
-renderTitle : ViewType -> Html Msg
-renderTitle viewType =
-    case viewType of
+renderTitle : Model -> Html Msg
+renderTitle model =
+    case model.viewType of
         FindMe ->
-            h1 [] [ text "My location" ]
+            div [] [ renderStatus model ]
 
         FindLocation ->
             h1 [] [ text "Find a location" ]
@@ -130,11 +129,13 @@ renderFindLocationInput model =
             , placeholder "Type anything"
             ]
             []
+        , br [] []
         , button [ class "symbol", onClick UserEnteredDegreesSymbol ] [ text "°" ]
         , button [ class "symbol", onClick UserEnteredMinutesSymbol ] [ text "′" ]
         , button [ class "symbol", onClick UserEnteredCommaSymbol ] [ text "," ]
+        , button [ class "clear", onClick UserClickedClear ] [ text "Clear" ]
         , p [ class "example-input" ] [ text "for instance: 51.128172,-3.465142" ]
-        , p [ class "example-input" ] [ text "or: 51° 7′ 41.4192″ N, 3° 27′ 54.5112″ W" ]
+        , p [ class "example-input" ] [ text "or: 51° 7′ 41.4192″ N, 3° 27′ 54.5112 W" ]
         , p [ class "example-input" ] [ text "or: incomes decide bronze" ]
         ]
 
@@ -148,10 +149,10 @@ renderPosDec model =
                     div [ class "result empty" ] [ text "" ]
 
                 Just pos ->
-                    div [ class "result" ]
-                        [ "Longitude: " ++ (fromFloat pos.lon) |> text
+                    div [ class "result dec" ]
+                        [ "Longitude: " ++ fromFloat pos.lon |> text
                         , br [] []
-                        , "Latitude: " ++ (fromFloat pos.lat) |> text
+                        , "Latitude: " ++ fromFloat pos.lat |> text
                         ]
     in
     div []
@@ -169,7 +170,7 @@ renderPosW3w model =
                     div [ class "result empty" ] [ text "" ]
 
                 Just words ->
-                    div [ class "result" ] [ String.join "." words |> text ]
+                    div [ class "result w3w" ] [ String.join " " words |> text ]
     in
     div []
         [ span [ class "result-header" ] [ text "what3words" ]
@@ -186,7 +187,7 @@ renderPosDms model =
                     div [ class "result empty" ] [ text "" ]
 
                 Just dms ->
-                    div [ class "result" ]
+                    div [ class "result dms" ]
                         [ "Longitude: " |> text
                         , br [] []
                         , fromFloat dms.lon.degrees
@@ -195,8 +196,13 @@ renderPosDms model =
                             ++ " minutes, "
                             ++ fromFloat dms.lon.seconds
                             ++ " seconds "
-                            ++ (if dms.lon.direction == "W" then "West" else "East")
-                              |> text
+                            ++ (if dms.lon.direction == "W" then
+                                    "West"
+
+                                else
+                                    "East"
+                               )
+                            |> text
                         , br [] []
                         , "Latitude: " |> text
                         , br [] []
@@ -206,7 +212,12 @@ renderPosDms model =
                             ++ " minutes, "
                             ++ fromFloat dms.lat.seconds
                             ++ " seconds "
-                            ++ (if dms.lat.direction == "N" then "North" else "South")
+                            ++ (if dms.lat.direction == "N" then
+                                    "North"
+
+                                else
+                                    "South"
+                               )
                             |> text
                         ]
     in

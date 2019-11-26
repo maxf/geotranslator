@@ -9,6 +9,7 @@ type Msg
     | UserEnteredDegreesSymbol
     | UserEnteredMinutesSymbol
     | UserEnteredCommaSymbol
+    | UserClickedClear
     | GotW3w (Result Http.Error (List String))
     | GotW3wCoords (Result Http.Error PositionDec)
     | UserClickedSetFindMe
@@ -184,3 +185,22 @@ dms2dec dms =
 roundTo : Int -> Float -> Float
 roundTo n x =
     toFloat (round (x * toFloat n)) / toFloat n
+
+
+fromHttpError : Http.Error -> String
+fromHttpError error =
+    case error of
+        Http.BadUrl s ->
+            "Bad URL: " ++ s
+
+        Http.Timeout ->
+            "Request timed out"
+
+        Http.NetworkError ->
+            "Network Error"
+
+        Http.BadStatus s ->
+            "Bad status: " ++ String.fromInt s
+
+        Http.BadBody s ->
+            "Bad body: " ++ s

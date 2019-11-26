@@ -36,6 +36,8 @@
          document.getElementById('input').focus()
        });
 
+       let watchId;
+
        app.ports.getCurrentLocation.subscribe(data => {
          const success = position => {
            app.ports.gotLocation.send({
@@ -52,7 +54,12 @@
              error : error.message
            });
          };
-         navigator.geolocation.watchPosition(success, error);
+         watchId = navigator.geolocation.watchPosition(success, error);
+       });
+
+
+       app.ports.stopGeolocation.subscribe(data => {
+         navigator.geolocation.clearWatch(watchId);
        });
 
      } else {

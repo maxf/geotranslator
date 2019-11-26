@@ -4,11 +4,11 @@ html {
 }
 
 input {
-  border: 5px solid black;
+  border: 3px solid black;
   border-radius: 10px;
-  font-size: 40px;
+  font-size: 20px;
   margin: 10px 0 10px 0;
-  width: 70%;
+  width: 100%;
   padding: 5px;
 }
 
@@ -20,14 +20,15 @@ input {
 .example-input {
   margin: 0;
   color: #999;
+  font-size: 5vw;
 }
 
 input.validInput {
-  border: 5px solid green;
+  border: 3px solid green;
 }
 
 input.invalidInput {
-  border: 5px solid red;
+  border: 3px solid red;
 }
 
 .result {
@@ -44,14 +45,26 @@ input.invalidInput {
   background: #ddd;
 }
 
+.result.dec {
+  font-size: 6vw;
+}
+
+.result.dms {
+  font-size: 6vw;
+}
+
+.result.w3w {
+  font-size: 6vw;
+}
+
 .map-button-link {
+  cursor: pointer;
   color: white;
   font-weight: bold;
   line-height: 2;
 }
 
 .switch-view-button {
-  width: 40%;
   height: 2em;
   background: #66f;
   border: 1px solid black;
@@ -63,7 +76,6 @@ input.invalidInput {
 }
 
 .map-button {
-  width: 40%;
   height: 2em;
   background: #f00;
   border: 1px solid black;
@@ -78,14 +90,32 @@ input.invalidInput {
   border: none;
 }
 
+#input {
+  box-sizing: border-box;
+}
+
 button.symbol {
-  font-size: 40px;
+  vertical-align: middle;
+  font-size: 30px;
   background: #ddd;
   border: 1px solid black;
   border-radius: 10px;
-  margin: 2px; 5px 0 5px;
+  margin: 2px 5px 5px 5px;
   width: 1em;
+  height: 40px;
 }
+
+button.clear {
+  vertical-align: middle;
+  font-size: 20px;
+  background: #ddd;
+  border: 1px solid black;
+  border-radius: 10px;
+  margin: 2px 5px 5px 25px;
+  height: 40px;
+}
+
+
 
 .input-area {
   margin-bottom: 1em;

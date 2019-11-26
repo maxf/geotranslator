@@ -29,6 +29,9 @@ port getCurrentLocation : String -> Cmd msg
 port gotLocation : (PositionBrowser -> msg) -> Sub msg
 
 
+port stopGeolocation : String -> Cmd msg
+
+
 subscriptions : Model -> Sub Msg
 subscriptions model =
     gotLocation GotLocation
@@ -65,14 +68,21 @@ update msg model =
         UserEnteredCommaSymbol ->
             ( model |> withNewUserInput (model.userInput ++ ", "), focusOn "input" )
 
-        GotW3w (Err _) ->
-            ( { model | message = "w3w api error" }, Cmd.none )
+        UserClickedClear ->
+            ( model |> withNewUserInput "", focusOn "input" )
+
+        GotW3w (Err error) ->
+            ( { model | message = "W3W API error: " ++ fromHttpError error  }
+            , Cmd.none
+            )
 
         GotW3w (Ok words) ->
             ( { model | positionW3w = Just words }, Cmd.none )
 
-        GotW3wCoords (Err _) ->
-            ( { model | message = "w3w api error when fetching coords" }, Cmd.none )
+        GotW3wCoords (Err error) ->
+            ( { model | message = "W3W API error: " ++ fromHttpError error  }
+            , Cmd.none
+            )
 
         GotW3wCoords (Ok dec) ->
             ( { model
@@ -85,7 +95,19 @@ update msg model =
             )
 
         UserClickedSetFindLocation ->
-            ( { model | viewType = FindLocation }, Cmd.none )
+            ( { model
+                  | viewType = FindLocation
+                  , message = ""
+                  , inputIsValid = False
+                  , parsedW3w = Nothing
+                  , positionDec = Nothing
+                  , positionDms = Nothing
+                  , positionW3w = Nothing
+                  , browserLocation = NotAsked
+                  , userInput = ""
+              }
+            , stopGeolocation ""
+            )
 
         UserClickedSetFindMe ->
             ( { model
