@@ -55,6 +55,7 @@ input.invalidInput {
 
 .result.w3w {
   font-size: 6vw;
+  line-height: 2em;
 }
 
 .map-button-link {
@@ -132,4 +133,14 @@ input::placeholder {
 h1 {
   font-size: 32px;
   margin-bottom: 0;
+}
+
+#spinner, #radar {
+  width: 40px;
+  height: 40px;
+  vertical-align: middle;
+}
+
+h2 {
+  font-size: 7.8vw;
 }

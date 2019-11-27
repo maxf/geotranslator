@@ -25,13 +25,19 @@ renderStatus : Model -> Html Msg
 renderStatus model =
     case model.browserLocation of
         Waiting ->
-            h2 [] [ text "Waiting for location" ]
+            h2 []
+                [ img [ id "spinner", src "spinner.gif", alt "please wait" ] []
+                , text "Waiting for location"
+                ]
 
         Failure error ->
             h2 [ class "error" ] [ "Error: " ++ error |> text ]
 
         Success _ ->
-            h2 [] [ text "Tracking your location" ]
+            h2 []
+                [ img [ id "radar", src "radar.gif", alt "spinning radar" ] []
+                , text "Tracking your location"
+                ]
 
         _ ->
             text ""
