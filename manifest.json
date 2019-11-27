@@ -1,0 +1,21 @@
+{
+  "short_name": "GeoTranslator",
+  "name": "GeoTranslator",
+  "icons": [
+    {
+      "src": "/images/logo-192x192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/images/logo-512x512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "/geotranslator",
+  "background_color": "#3367D6",
+  "display": "standalone",
+  "scope": "/geotranslator",
+  "theme_color": "#3367D6"
+}

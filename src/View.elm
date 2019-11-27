@@ -26,7 +26,7 @@ renderStatus model =
     case model.browserLocation of
         Waiting ->
             h2 []
-                [ img [ id "spinner", src "spinner.gif", alt "please wait" ] []
+                [ img [ id "spinner", src "images/spinner.gif", alt "please wait" ] []
                 , text "Waiting for location"
                 ]
 
@@ -35,7 +35,7 @@ renderStatus model =
 
         Success _ ->
             h2 []
-                [ img [ id "radar", src "radar.gif", alt "spinning radar" ] []
+                [ img [ id "radar", src "images/radar.gif", alt "spinning radar" ] []
                 , text "Tracking your location"
                 ]
 

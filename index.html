@@ -5,7 +5,7 @@
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width">
     <link rel="stylesheet" href="main.css">
-    <script src="elm.js"></script>
+    <script src="js/elm.js"></script>
   </head>
   <body>
     <div id="elm"></div>
@@ -57,7 +57,6 @@
          watchId = navigator.geolocation.watchPosition(success, error);
        });
 
-
        app.ports.stopGeolocation.subscribe(data => {
          navigator.geolocation.clearWatch(watchId);
        });
@@ -65,7 +64,23 @@
      } else {
        document.write('missing w3w api key in the URL');
      }
-
     </script>
+
+    <script>
+     if ('serviceWorker' in navigator) {
+       window.addEventListener('load', function() {
+         navigator.serviceWorker.register('service-worker.js')
+                  .then(function(registration) {
+                    console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                  }, function(err) {
+                    console.log('ServiceWorker registration failed: ', err);
+                  });
+       });
+     } else {
+       console.log('no service worker available in this browser');
+     }
+    </script>
+
+
   </body>
 </html>
