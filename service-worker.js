@@ -2,7 +2,7 @@ const urlsToCache = [
   'index.html',
   'images/logo-192x192.png',
   'images/logo-512x512.png',
-  'js/elm.js',
+  'elm.js',
   'main.css',
   'service-worker.js'
 ];
