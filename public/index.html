@@ -1,0 +1,72 @@
+<!DOCTYPE HTML>
+<html lang="en-GB">
+  <head>
+    <title>Geotranslator</title>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width">
+    <meta name="theme-color" content="#3367D6"/>
+    <link rel="stylesheet" href="main.css">
+    <link rel="shortcut icon" type="image/png" href="images/logo-192x192.png">
+    <link rel="apple-touch-icon" href="images/logo-192x192.png">
+    <link rel="manifest" href="manifest.json">
+    <script src="elm.js"></script>
+  </head>
+  <body>
+    <div id="elm"></div>
+    <noscript>
+      <h1>We're sorry but your browser needs JavaScript turned on</h1>
+    </noscript>
+    <script>
+     const app = Elm.Main.init(
+       {
+         node: document.getElementById("elm")
+       });
+
+     app.ports.focusOn.subscribe(data => {
+       document.getElementById('input').focus()
+     });
+
+     let watchId;
+
+     app.ports.getCurrentLocation.subscribe(data => {
+       const success = position => {
+         app.ports.gotLocation.send({
+           lon: position.coords.longitude,
+           lat: position.coords.latitude,
+           error: ''
+         });
+       };
+
+       const error = error => {
+         app.ports.gotLocation.send({
+           lon: NaN,
+           lat: NaN,
+           error : error.message
+         });
+       };
+       watchId = navigator.geolocation.watchPosition(success, error);
+     });
+
+     app.ports.stopGeolocation.subscribe(data => {
+       navigator.geolocation.clearWatch(watchId);
+     });
+    </script>
+
+    <script>
+     if ('serviceWorker' in navigator) {
+       window.addEventListener('load', function() {
+         navigator.serviceWorker.register('service-worker.js')
+                  .then(function(registration) {
+                    console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                  }, function(err) {
+                    console.log('ServiceWorker registration failed: ', err);
+                  });
+       });
+     } else {
+       console.log('no service worker available in this browser');
+     }
+    </script>
+
+
+  </body>
+</html>

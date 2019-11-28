@@ -10,10 +10,10 @@ import Types exposing (..)
 import View
 
 
-main : Program String Model Msg
+main : Program () Model Msg
 main =
     Browser.element
-        { init = init
+        { init = \_ -> init
         , view = View.render
         , update = update
         , subscriptions = subscriptions
@@ -136,8 +136,8 @@ update msg model =
                     ( newModel, fetchRemoteCoords newModel )
 
 
-init : String -> ( Model, Cmd Msg )
-init flags =
+init : ( Model, Cmd Msg )
+init =
     let
         initialModel =
             { userInput = ""
@@ -147,7 +147,7 @@ init flags =
             , positionDec = Nothing
             , positionDms = Nothing
             , positionW3w = Nothing
-            , w3wApiKey = flags
+            , w3wApiKey = "[INSERT API KEY HERE]"
             , viewType = FindMe
             , browserLocation = Waiting
             }
@@ -365,7 +365,7 @@ fetchRemoteCoords model =
                                         w3wDecoder
                             in
                             Http.get
-                                { url = "https://api.what3words.com/v3/convert-to-3wa?coordinates=" ++ lonS ++ "%2C" ++ latS ++ "&key=" ++ model.w3wApiKey
+                                { url = "/proxy/c2w.php?lon=" ++ lonS ++ "&lat=" ++ latS
                                 , expect = Http.expectJson GotW3w decoder
                                 }
 
@@ -380,7 +380,7 @@ fetchRemoteCoords model =
                                 |> requiredAt [ "coordinates", "lat" ] float
                     in
                     Http.get
-                        { url = "https://api.what3words.com/v3/convert-to-coordinates?key=" ++ model.w3wApiKey ++ "&words=" ++ words ++ "&format=json"
+                        { url = "/proxy/w2x.php?words=" ++ words
                         , expect = Http.expectJson GotW3wCoords decoder
                         }
 

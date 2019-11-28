@@ -5,5 +5,5 @@ windows:
   - main:
       layout: main-vertical
       panes:
-        - ls src/*.elm | entr -cr bash -c "clear && tmux clear-history && make elm.js"
-        - cd .. && http-server .
+        - ls src/*.elm | entr -cr bash -c "clear && tmux clear-history && make"
+        - http-server public
