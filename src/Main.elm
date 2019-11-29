@@ -365,7 +365,7 @@ fetchRemoteCoords model =
                                         w3wDecoder
                             in
                             Http.get
-                                { url = "/proxy/c2w.php?lon=" ++ lonS ++ "&lat=" ++ latS
+                                { url = "/w3w/c2w?lon=" ++ lonS ++ "&lat=" ++ latS
                                 , expect = Http.expectJson GotW3w decoder
                                 }
 
@@ -380,7 +380,7 @@ fetchRemoteCoords model =
                                 |> requiredAt [ "coordinates", "lat" ] float
                     in
                     Http.get
-                        { url = "/proxy/w2x.php?words=" ++ words
+                        { url = "/w3w/w2c?words=" ++ words
                         , expect = Http.expectJson GotW3wCoords decoder
                         }
 

@@ -1,9 +1,9 @@
 const urlsToCache = [
-  'index.html',
+  '/',
   'images/logo-192x192.png',
   'images/logo-512x512.png',
-  'elm.js',
-  'main.css',
+  'javascripts/elm.js',
+  'stylesheets/main.css',
   'service-worker.js'
 ];
 
