@@ -6,4 +6,4 @@ windows:
       layout: main-vertical
       panes:
         - ls src/*.elm | entr -cr bash -c "clear && tmux clear-history && make"
-        - http-server public
+        - npm start

@@ -8,4 +8,4 @@ install:
 ifndef DEST
 $(error DEST not set)
 endif
-	rsync -avzr --delete . $(DEST)
+	rsync -avzr --exclude .git --exclude node_modules --exclude elm-stuff --delete . $(DEST)
