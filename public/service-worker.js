@@ -1,10 +1,7 @@
 const urlsToCache = [
   '/',
-  'images/logo-192x192.png',
-  'images/logo-512x512.png',
-  'javascripts/elm.js',
-  'stylesheets/main.css',
-  'service-worker.js'
+  '/javascripts/elm.js',
+  '/service-worker.js'
 ];
 
 const cacheName = 'cache';
