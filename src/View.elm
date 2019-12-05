@@ -176,8 +176,8 @@ renderFindLocationInput model =
             ]
         , column
             [ Font.size 14 ]
-            [ text "for instance: 51.128172,-3.465142"
-            , text "or: 51° 7′ 41.4192″ N, 3° 27′ 54.5112 W"
+            [ text "for instance: 51.12, -3.42"
+            , text "or: 51° 7′ N, 3° 27′ 54.52 W"
             , text "or: incomes decide bronze"
             ]
         ]
