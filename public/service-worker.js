@@ -1,3 +1,5 @@
+// version 0.01
+
 const urlsToCache = [
   '/',
   '/javascripts/elm.js',
