@@ -49,11 +49,6 @@ mapLinkStyle =
     ]
 
 
-switchViewStyle =
-    [ Background.color colour3
-    , padding 10
-    , Border.rounded 5
-    ]
 
 
 debugMessageStyle =
@@ -85,13 +80,13 @@ render model =
     <|
         column
             [ padding 5, spacing 10, width fill ]
-            [ renderTitle model
+            [ renderSwitchViewButton model.viewType
+            , renderTitle model
             , renderInputBox model
             , renderPosDec model
             , renderPosDms model
             , renderPosW3w model
             , row [ centerX ] [ renderMapButton model.positionDec ]
-            , row [ centerX ] [ renderSwitchViewButton model.viewType ]
             , el debugMessageStyle (text model.message)
             ]
 
@@ -301,7 +296,12 @@ renderMapButton pos =
 renderSwitchViewButton : ViewType -> Element Msg
 renderSwitchViewButton viewType =
     Input.button
-        switchViewStyle
+        [ Background.color colour3
+        , padding 5
+        , Border.rounded 5
+        , Font.size 14
+        , alignRight
+        ]
     <|
         case viewType of
             FindMe ->
