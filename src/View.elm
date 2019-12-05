@@ -118,7 +118,7 @@ renderStatus model =
             [ text "Finding your location" ]
 
         Failure error ->
-            [ text <| "Error: " ++ error ]
+            [ el [ Font.color colour4 ] (text <| "Error: " ++ error) ]
 
         Success _ ->
             [ text "Your location:" ]
