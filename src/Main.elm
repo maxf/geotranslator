@@ -108,7 +108,7 @@ update msg model =
                         Just words ->
                             Success words
               }
-            , fetchRemoteCoords model
+            , Cmd.none
             )
 
         UserClickedSetFindLocation ->
