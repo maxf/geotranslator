@@ -21,10 +21,6 @@
          node: document.getElementById("elm")
        });
 
-     app.ports.focusOn.subscribe(data => {
-       document.getElementById('input').focus()
-     });
-
      let watchId;
 
      app.ports.getCurrentLocation.subscribe(data => {

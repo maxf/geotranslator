@@ -1,11 +1,13 @@
 port module Main exposing (main)
 
 import Browser
+import Browser.Dom exposing (focus)
 import Http
 import Json.Decode as Decode exposing (Decoder, float, map, string)
 import Json.Decode.Pipeline exposing (required, requiredAt)
 import Json.Encode exposing (Value)
 import Regex
+import Task
 import Types exposing (..)
 import View
 
@@ -18,9 +20,6 @@ main =
         , update = update
         , subscriptions = subscriptions
         }
-
-
-port focusOn : String -> Cmd msg
 
 
 port getCurrentLocation : String -> Cmd msg
@@ -60,16 +59,24 @@ update msg model =
             ( newModel, fetchRemoteCoords newModel )
 
         UserEnteredDegreesSymbol ->
-            ( model |> withNewUserInput (model.userInput ++ "° "), focusOn "input" )
+            ( model |> withNewUserInput (model.userInput ++ "° ")
+            , Task.attempt (\_ -> NoOp) (focus "input")
+            )
 
         UserEnteredMinutesSymbol ->
-            ( model |> withNewUserInput (model.userInput ++ "′ "), focusOn "input" )
+            ( model |> withNewUserInput (model.userInput ++ "′ ")
+            , Task.attempt (\_ -> NoOp) (focus "input")
+            )
 
         UserEnteredCommaSymbol ->
-            ( model |> withNewUserInput (model.userInput ++ ", "), focusOn "input" )
+            ( model |> withNewUserInput (model.userInput ++ ", ")
+            , Task.attempt (\_ -> NoOp) (focus "input")
+            )
 
         UserClickedClear ->
-            ( model |> withNewUserInput "", focusOn "input" )
+            ( model |> withNewUserInput ""
+            , Task.attempt (\_ -> NoOp) (focus "input")
+            )
 
         GotW3w (Err error) ->
             ( { model
@@ -154,6 +161,9 @@ update msg model =
                             { model | browserLocation = Success location }
                 in
                 ( newModel, fetchRemoteCoords newModel )
+
+        NoOp ->
+            ( model, Cmd.none )
 
 
 init : ( Model, Cmd Msg )

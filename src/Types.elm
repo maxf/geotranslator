@@ -15,6 +15,7 @@ type Msg
     | UserClickedSetFindMe
     | UserClickedSetFindLocation
     | GotDeviceLocation PositionBrowser
+    | NoOp
 
 
 type alias W3Words =

@@ -7,6 +7,7 @@ import Element.Font as Font
 import Element.Input as Input
 import Element.Region as Region
 import Html exposing (Html)
+import Html.Attributes
 import String exposing (fromFloat)
 import Types exposing (..)
 
@@ -142,6 +143,7 @@ renderFindLocationInput model =
             , Font.color (rgba 0 0 0 1)
             , Background.color
                 <| if model.inputIsValid then colour5 else rgb255 255 255 255
+            , htmlAttribute (Html.Attributes.id "input")
             ]
     in
     column
