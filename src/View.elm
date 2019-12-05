@@ -27,6 +27,10 @@ colour4 =
     rgb255 238 130 28
 
 
+colour5 =
+    rgb255 150 200 150
+
+
 positionBoxStyle =
     [ Background.color colour2
     , padding 8
@@ -135,20 +139,17 @@ renderInputBox model =
 renderFindLocationInput : Model -> Element Msg
 renderFindLocationInput model =
     let
-        inputClass =
-            if model.userInput == "" then
-                ""
-
-            else if model.inputIsValid then
-                "validInput"
-
-            else
-                "invalidInput"
+        inputStyle =
+            [ width fill
+            , Font.color (rgba 0 0 0 1)
+            , Background.color
+                <| if model.inputIsValid then colour5 else rgb255 255 255 255
+            ]
     in
     column
         [ spacing 15, width fill ]
         [ Input.search
-            [ width fill, Font.color (rgba 0 0 0 1) ]
+            inputStyle
             { onChange = UserTyped
             , placeholder = Just (Input.placeholder [] (text "Type anything"))
             , text = model.userInput
