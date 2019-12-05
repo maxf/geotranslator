@@ -29,7 +29,7 @@
 
      app.ports.getCurrentLocation.subscribe(data => {
        const success = position => {
-         app.ports.gotLocation.send({
+         app.ports.gotDeviceLocation.send({
            lon: position.coords.longitude,
            lat: position.coords.latitude,
            error: ''
@@ -37,10 +37,18 @@
        };
 
        const error = error => {
-         app.ports.gotLocation.send({
+         let reason;
+         switch (error.code) {
+           case error.PERMISSION_DENIED: reason = "User denied location access"; break;
+           case error.POSITION_UNAVAILABLE: reason = "Position could not be determined"; break;
+           case error.TIMEOUT: reason = "A timeout occured before position was available"; break;
+           default: reason = "Unknown error requesting location";
+         }
+
+         app.ports.gotDeviceLocation.send({
            lon: NaN,
            lat: NaN,
-           error : error.message
+           error : reason
          });
        };
        watchId = navigator.geolocation.watchPosition(success, error);

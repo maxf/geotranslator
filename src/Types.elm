@@ -14,7 +14,7 @@ type Msg
     | GotW3wCoords (Result Http.Error PositionDec)
     | UserClickedSetFindMe
     | UserClickedSetFindLocation
-    | GotLocation PositionBrowser
+    | GotDeviceLocation PositionBrowser
 
 
 type alias W3Words =
@@ -69,7 +69,6 @@ type alias Model =
     , positionDec : Maybe PositionDec
     , positionDms : Maybe PositionDms
     , positionW3w : RemoteData String PositionW3w
-    , w3wApiKey : String
     , viewType : ViewType
     , browserLocation : RemoteData String PositionBrowser
     }

@@ -26,7 +26,7 @@ port focusOn : String -> Cmd msg
 port getCurrentLocation : String -> Cmd msg
 
 
-port gotLocation : (PositionBrowser -> msg) -> Sub msg
+port gotDeviceLocation : (PositionBrowser -> msg) -> Sub msg
 
 
 port stopGeolocation : String -> Cmd msg
@@ -34,7 +34,7 @@ port stopGeolocation : String -> Cmd msg
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    gotLocation GotLocation
+    gotDeviceLocation GotDeviceLocation
 
 
 withNewUserInput : String -> Model -> Model
@@ -134,7 +134,7 @@ update msg model =
             , getCurrentLocation ""
             )
 
-        GotLocation location ->
+        GotDeviceLocation location ->
             if location.error /= "" then
                 ( { model
                     | browserLocation = Failure location.error
@@ -167,7 +167,6 @@ init =
             , positionDec = Nothing
             , positionDms = Nothing
             , positionW3w = NotAsked
-            , w3wApiKey = "[INSERT API KEY HERE]"
             , viewType = FindMe
             , browserLocation = Waiting
             }

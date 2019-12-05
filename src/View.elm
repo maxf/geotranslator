@@ -37,6 +37,7 @@ positionBoxStyle =
     , spacing 5
     , width fill
     , Border.rounded 2
+    , Font.size 24
     ]
 
 
@@ -83,7 +84,7 @@ render model =
         ]
     <|
         column
-            [ padding 5, spacing 10, width fill ]
+            [ padding 5, spacing 15, width fill ]
             [ renderSwitchViewButton model.viewType
             , renderTitle model
             , renderInputBox model
