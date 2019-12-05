@@ -68,7 +68,7 @@ type alias Model =
     , parsedW3w : Maybe (List String) -- when user entered 3 words, but they've not been validated by API
     , positionDec : Maybe PositionDec
     , positionDms : Maybe PositionDms
-    , positionW3w : Maybe PositionW3w
+    , positionW3w : RemoteData String PositionW3w
     , w3wApiKey : String
     , viewType : ViewType
     , browserLocation : RemoteData String PositionBrowser

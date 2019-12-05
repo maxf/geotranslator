@@ -121,7 +121,7 @@ renderStatus model =
             [ text <| "Error: " ++ error ]
 
         Success _ ->
-            [ text "Tracking your location" ]
+            [ text "Your location:" ]
 
         _ ->
             [ none ]
@@ -264,11 +264,18 @@ renderPosW3w model =
     let
         w3wString =
             case model.positionW3w of
-                Nothing ->
+                NotAsked ->
                     ""
 
-                Just words ->
+                Waiting ->
+                    "(pending)"
+
+                Success words ->
                     String.join " " words
+
+                Failure message ->
+                    "(error)"
+
     in
     column
         positionBoxStyle

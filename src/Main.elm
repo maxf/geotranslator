@@ -43,7 +43,7 @@ withNewUserInput value model =
         | userInput = value
         , positionDec = Nothing
         , positionDms = Nothing
-        , positionW3w = Nothing
+        , positionW3w = NotAsked
         , parsedW3w = Nothing
     }
         |> convertInput
@@ -72,15 +72,26 @@ update msg model =
             ( model |> withNewUserInput "", focusOn "input" )
 
         GotW3w (Err error) ->
-            ( { model | message = "W3W API error: " ++ fromHttpError error  }
+            ( { model
+                | message = "W3W API error: " ++ fromHttpError error
+                , positionW3w = Failure "Error"
+              }
             , Cmd.none
             )
 
         GotW3w (Ok words) ->
-            ( { model | positionW3w = Just words }, Cmd.none )
+            ( { model
+                | message = ""
+                , positionW3w = Success words
+              }
+            , Cmd.none
+            )
 
         GotW3wCoords (Err error) ->
-            ( { model | message = "W3W API error: " ++ fromHttpError error  }
+            ( { model
+                | message = "W3W API error: " ++ fromHttpError error
+                , positionW3w = Failure "got error from w3w"
+              }
             , Cmd.none
             )
 
@@ -89,22 +100,28 @@ update msg model =
                 | message = ""
                 , positionDec = Just dec
                 , positionDms = Just (dec2dms dec)
-                , positionW3w = model.parsedW3w
+                , positionW3w =
+                    case model.parsedW3w of
+                        Nothing ->
+                            NotAsked
+
+                        Just words ->
+                            Success words
               }
             , fetchRemoteCoords model
             )
 
         UserClickedSetFindLocation ->
             ( { model
-                  | viewType = FindLocation
-                  , message = ""
-                  , inputIsValid = False
-                  , parsedW3w = Nothing
-                  , positionDec = Nothing
-                  , positionDms = Nothing
-                  , positionW3w = Nothing
-                  , browserLocation = NotAsked
-                  , userInput = ""
+                | viewType = FindLocation
+                , message = ""
+                , inputIsValid = False
+                , parsedW3w = Nothing
+                , positionDec = Nothing
+                , positionDms = Nothing
+                , positionW3w = NotAsked
+                , browserLocation = NotAsked
+                , userInput = ""
               }
             , stopGeolocation ""
             )
@@ -120,9 +137,12 @@ update msg model =
         GotLocation location ->
             if location.error /= "" then
                 ( { model
-                      | browserLocation = Failure location.error
-                      , message = location.error
-                  }, Cmd.none )
+                    | browserLocation = Failure location.error
+                    , message = location.error
+                  }
+                , Cmd.none
+                )
+
             else
                 let
                     newModel =
@@ -133,7 +153,7 @@ update msg model =
                             (location.lat |> roundTo 100000)
                             { model | browserLocation = Success location }
                 in
-                    ( newModel, fetchRemoteCoords newModel )
+                ( newModel, fetchRemoteCoords newModel )
 
 
 init : ( Model, Cmd Msg )
@@ -146,7 +166,7 @@ init =
             , parsedW3w = Nothing
             , positionDec = Nothing
             , positionDms = Nothing
-            , positionW3w = Nothing
+            , positionW3w = NotAsked
             , w3wApiKey = "[INSERT API KEY HERE]"
             , viewType = FindMe
             , browserLocation = Waiting
@@ -314,6 +334,7 @@ modelFromDms valid message lon lat model =
         , inputIsValid = valid
         , positionDms = Just dms
         , positionDec = Just (dms2dec dms)
+        , positionW3w = Waiting
     }
 
 
@@ -328,6 +349,7 @@ modelFromDec valid message lon lat model =
         , inputIsValid = valid
         , positionDec = Just dec
         , positionDms = Just (dec2dms dec)
+        , positionW3w = Waiting
     }
 
 
@@ -343,46 +365,41 @@ w3wDecoder =
 
 fetchRemoteCoords : Model -> Cmd Msg
 fetchRemoteCoords model =
-    case model.positionW3w of
+    case model.parsedW3w of
         Nothing ->
-            case model.parsedW3w of
+            case model.positionDec of
                 Nothing ->
-                    case model.positionDec of
-                        Nothing ->
-                            Cmd.none
+                    Cmd.none
 
-                        Just pos ->
-                            let
-                                lonS =
-                                    pos.lon |> String.fromFloat
-
-                                latS =
-                                    pos.lat |> String.fromFloat
-
-                                decoder =
-                                    Decode.map
-                                        (\s -> String.split "." s.words)
-                                        w3wDecoder
-                            in
-                            Http.get
-                                { url = "/w3w/c2w?lon=" ++ lonS ++ "&lat=" ++ latS
-                                , expect = Http.expectJson GotW3w decoder
-                                }
-
-                Just parsedWords ->
+                Just pos ->
                     let
-                        words =
-                            String.join "." parsedWords
+                        lonS =
+                            pos.lon |> String.fromFloat
+
+                        latS =
+                            pos.lat |> String.fromFloat
 
                         decoder =
-                            Decode.succeed PositionDec
-                                |> requiredAt [ "coordinates", "lng" ] float
-                                |> requiredAt [ "coordinates", "lat" ] float
+                            Decode.map
+                                (\s -> String.split "." s.words)
+                                w3wDecoder
                     in
                     Http.get
-                        { url = "/w3w/w2c?words=" ++ words
-                        , expect = Http.expectJson GotW3wCoords decoder
+                        { url = "/w3w/c2w?lon=" ++ lonS ++ "&lat=" ++ latS
+                        , expect = Http.expectJson GotW3w decoder
                         }
 
-        Just _ ->
-            Cmd.none
+        Just parsedWords ->
+            let
+                words =
+                    String.join "." parsedWords
+
+                decoder =
+                    Decode.succeed PositionDec
+                        |> requiredAt [ "coordinates", "lng" ] float
+                        |> requiredAt [ "coordinates", "lat" ] float
+            in
+            Http.get
+                { url = "/w3w/w2c?words=" ++ words
+                , expect = Http.expectJson GotW3wCoords decoder
+                }
