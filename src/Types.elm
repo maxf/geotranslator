@@ -6,15 +6,14 @@ import Json.Encode
 
 type Msg
     = UserTyped String
-    | UserEnteredDegreesSymbol
-    | UserEnteredMinutesSymbol
-    | UserEnteredCommaSymbol
+    | UserEnteredSymbol String
     | UserClickedClear
     | GotW3w (Result Http.Error (List String))
     | GotW3wCoords (Result Http.Error PositionDec)
     | UserClickedSetFindMe
     | UserClickedSetFindLocation
     | GotDeviceLocation PositionBrowser
+    | GotCursorPosition (Int, String)
     | NoOp
 
 

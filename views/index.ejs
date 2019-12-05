@@ -53,6 +53,14 @@
      app.ports.stopGeolocation.subscribe(data => {
        navigator.geolocation.clearWatch(watchId);
      });
+
+
+     app.ports.getCursorPosition.subscribe(symbol => {
+       console.log("sel", document.getElementById('input').selectionStart);
+       app.ports.gotCursorPosition.send([document.getElementById('input').selectionStart, symbol]);
+     });
+
+
     </script>
 
     <script>

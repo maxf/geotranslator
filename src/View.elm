@@ -66,7 +66,6 @@ symbolEntryStyle =
     ]
 
 
-
 render : Model -> Html Msg
 render model =
     layout
@@ -90,7 +89,7 @@ render model =
                 , Font.size 12
                 , alignRight
                 ]
-                ( text <| model.message ++ " v0.01" )
+                (text <| model.message ++ "(v0.01)")
             ]
 
 
@@ -141,8 +140,12 @@ renderFindLocationInput model =
         inputStyle =
             [ width fill
             , Font.color (rgba 0 0 0 1)
-            , Background.color
-                <| if model.inputIsValid then colour5 else rgb255 255 255 255
+            , Background.color <|
+                if model.inputIsValid then
+                    colour5
+
+                else
+                    rgb255 255 255 255
             , htmlAttribute (Html.Attributes.id "input")
             ]
     in
@@ -158,15 +161,15 @@ renderFindLocationInput model =
         , wrappedRow
             [ spacing 10 ]
             [ Input.button symbolEntryStyle
-                { onPress = Just UserEnteredDegreesSymbol
+                { onPress = Just (UserEnteredSymbol "°")
                 , label = text "°"
                 }
             , Input.button symbolEntryStyle
-                { onPress = Just UserEnteredMinutesSymbol
+                { onPress = Just (UserEnteredSymbol "′")
                 , label = text "′"
                 }
             , Input.button symbolEntryStyle
-                { onPress = Just UserEnteredCommaSymbol
+                { onPress = Just (UserEnteredSymbol ",")
                 , label = text ","
                 }
             , Input.button symbolEntryStyle
@@ -271,7 +274,6 @@ renderPosW3w model =
 
                 Failure message ->
                     "(error)"
-
     in
     column
         positionBoxStyle

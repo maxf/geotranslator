@@ -28,12 +28,22 @@ port getCurrentLocation : String -> Cmd msg
 port gotDeviceLocation : (PositionBrowser -> msg) -> Sub msg
 
 
+port gotCursorPosition : (( Int, String ) -> msg) -> Sub msg
+
+
 port stopGeolocation : String -> Cmd msg
+
+
+port getCursorPosition : String -> Cmd msg
 
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    gotDeviceLocation GotDeviceLocation
+    Sub.batch
+        [ gotDeviceLocation GotDeviceLocation
+        , gotCursorPosition GotCursorPosition
+        ]
+
 
 
 withNewUserInput : String -> Model -> Model
@@ -48,6 +58,20 @@ withNewUserInput value model =
         |> convertInput
 
 
+withNewSymbol : Int -> String -> Model -> Model
+withNewSymbol pos symbol model =
+    let
+        old = model.userInput
+        new =
+            String.concat
+                [ String.slice 0 pos old
+                , symbol
+                , String.slice pos (String.length old) old
+                ]
+    in
+        { model | userInput = new } |> convertInput
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
@@ -58,23 +82,18 @@ update msg model =
             in
             ( newModel, fetchRemoteCoords newModel )
 
-        UserEnteredDegreesSymbol ->
-            ( model |> withNewUserInput (model.userInput ++ "° ")
-            , Task.attempt (\_ -> NoOp) (focus "input")
-            )
-
-        UserEnteredMinutesSymbol ->
-            ( model |> withNewUserInput (model.userInput ++ "′ ")
-            , Task.attempt (\_ -> NoOp) (focus "input")
-            )
-
-        UserEnteredCommaSymbol ->
-            ( model |> withNewUserInput (model.userInput ++ ", ")
-            , Task.attempt (\_ -> NoOp) (focus "input")
+        UserEnteredSymbol char ->
+            ( model-- |> withNewUserInput (model.userInput ++ char)
+            , getCursorPosition char
             )
 
         UserClickedClear ->
             ( model |> withNewUserInput ""
+            , Task.attempt (\_ -> NoOp) (focus "input")
+            )
+
+        GotCursorPosition (position, char) ->
+            ( model |> withNewSymbol position char
             , Task.attempt (\_ -> NoOp) (focus "input")
             )
 
