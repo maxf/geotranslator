@@ -114,7 +114,7 @@ renderStatus : Model -> List (Element Msg)
 renderStatus model =
     case model.browserLocation of
         Waiting ->
-            [ text "Waiting for location" ]
+            [ text "Finding your location" ]
 
         Failure error ->
             [ text <| "Error: " ++ error ]
@@ -298,7 +298,7 @@ renderSwitchViewButton : ViewType -> Element Msg
 renderSwitchViewButton viewType =
     Input.button
         [ Background.color colour3
-        , padding 5
+        , padding 8
         , Border.rounded 5
         , Font.size 14
         , alignRight
