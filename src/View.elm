@@ -54,14 +54,6 @@ mapLinkStyle =
     ]
 
 
-
-
-debugMessageStyle =
-    [ Font.color (rgba 9 9 9 1)
-    , Font.size 12
-    ]
-
-
 lonLatStyle =
     [ spacing 20 ]
 
@@ -92,7 +84,12 @@ render model =
             , renderPosDms model
             , renderPosW3w model
             , row [ centerX ] [ renderMapButton model.positionDec ]
-            , el debugMessageStyle (text model.message)
+            , el
+                [ Font.color (rgba 9 9 9 1)
+                , Font.size 12
+                , alignRight
+                ]
+                ( text <| model.message ++ " v0.01" )
             ]
 
 
