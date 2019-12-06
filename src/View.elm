@@ -84,12 +84,12 @@ render model =
             , renderPosDms model
             , renderPosW3w model
             , row [ centerX ] [ renderMapButton model.positionDec ]
-            , el
+            , paragraph
                 [ Font.color (rgba 9 9 9 1)
                 , Font.size 12
                 , alignRight
                 ]
-                (text <| model.message ++ "(v0.01)")
+                [ text <| model.message ++ "(v0.01)" ]
             ]
 
 
@@ -273,7 +273,7 @@ renderPosW3w model =
                     String.join " " words
 
                 Failure message ->
-                    "(error)"
+                    "(not found)"
     in
     column
         positionBoxStyle
