@@ -89,7 +89,7 @@ render model =
                 , Font.size 12
                 , alignRight
                 ]
-                [ text <| model.message ++ "(v0.01)" ]
+                [ text <| model.message ++ "(v0.03)" ]
             ]
 
 
@@ -264,24 +264,30 @@ renderPosW3w model =
         w3wString =
             case model.positionW3w of
                 NotAsked ->
-                    ""
+                    text ""
 
                 Waiting ->
-                    "(pending)"
+                    text "(pending)"
 
                 Success w3wPos ->
-                    let
-                        nearestPlace = if w3wPos.nearestPlace == "" then "" else " (" ++ w3wPos.nearestPlace ++ ")"
-                    in
-                    (String.join " " w3wPos.words) ++ nearestPlace
+                    column
+                        [ spacing 5 ]
+                        [ text <| String.join " " w3wPos.words
+                        , if w3wPos.nearestPlace == "" then
+                              none
+                          else
+                              paragraph
+                                  [ Font.size 18, Font.color colour4 ]
+                                  [ text <| " (" ++ w3wPos.nearestPlace ++ ")" ]
+                        ]
 
                 Failure message ->
-                    "(not found)"
+                    text "(not found)"
     in
     column
         positionBoxStyle
         [ el positionBoxLabelStyle (text "what3words")
-        , text w3wString
+        , w3wString
         ]
 
 

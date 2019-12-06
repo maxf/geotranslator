@@ -10,3 +10,4 @@ install:
 	else\
 		echo "DEST variable not set";\
 	fi
+	@echo "Make sure you've bumped the PWA version"
