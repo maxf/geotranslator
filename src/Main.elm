@@ -75,7 +75,7 @@ update msg model =
         GotNewInputValue text ->
             ( model |> withNewUserInput text, Cmd.none )
 
-        GotW3w (Err error) ->
+        GotW3wWords (Err error) ->
             ( { model
                 | message = "W3W API error: " ++ fromHttpError error
                 , positionW3w = Failure "Error"
@@ -83,10 +83,10 @@ update msg model =
             , Cmd.none
             )
 
-        GotW3w (Ok words) ->
+        GotW3wWords (Ok w3wPosition) ->
             ( { model
                 | message = ""
-                , positionW3w = Success words
+                , positionW3w = Success (PositionW3w (String.split "." w3wPosition.words) w3wPosition.nearestPlace)
               }
             , Cmd.none
             )
@@ -99,44 +99,32 @@ update msg model =
             , Cmd.none
             )
 
-        GotW3wCoords (Ok dec) ->
+        GotW3wCoords (Ok pos) ->
+            let
+                dec =
+                    PositionDec pos.coordinates.lng pos.coordinates.lat
+
+                w3w =
+                    PositionW3w (String.split "." pos.words) pos.nearestPlace
+            in
             ( { model
                 | message = ""
                 , positionDec = Just dec
                 , positionDms = Just (dec2dms dec)
-                , positionW3w =
-                    case model.parsedW3w of
-                        Nothing ->
-                            NotAsked
-
-                        Just words ->
-                            Success words
+                , positionW3w = Success w3w
               }
             , Cmd.none
             )
 
         UserClickedSetFindLocation ->
-            ( { model
+            ( { initialModel
                 | viewType = FindLocation
-                , message = ""
-                , inputIsValid = False
-                , parsedW3w = Nothing
-                , positionDec = Nothing
-                , positionDms = Nothing
-                , positionW3w = NotAsked
-                , browserLocation = NotAsked
-                , userInput = ""
-              }
+                , browserLocation = NotAsked }
             , stopGeolocation ""
             )
 
         UserClickedSetFindMe ->
-            ( { model
-                | viewType = FindMe
-                , browserLocation = Waiting
-              }
-            , getCurrentLocation ""
-            )
+            ( { initialModel | viewType = FindMe }, getCurrentLocation "" )
 
         GotDeviceLocation location ->
             if location.error /= "" then
@@ -163,21 +151,22 @@ update msg model =
             ( model, Cmd.none )
 
 
+initialModel : Model
+initialModel =
+    { userInput = ""
+    , message = ""
+    , inputIsValid = False
+    , parsedW3w = Nothing
+    , positionDec = Nothing
+    , positionDms = Nothing
+    , positionW3w = NotAsked
+    , viewType = FindMe
+    , browserLocation = Waiting
+    }
+
+
 init : ( Model, Cmd Msg )
 init =
-    let
-        initialModel =
-            { userInput = ""
-            , message = ""
-            , inputIsValid = False
-            , parsedW3w = Nothing
-            , positionDec = Nothing
-            , positionDms = Nothing
-            , positionW3w = NotAsked
-            , viewType = FindMe
-            , browserLocation = Waiting
-            }
-    in
     ( initialModel, getCurrentLocation "" )
 
 
@@ -361,12 +350,41 @@ modelFromDec valid message lon lat model =
 
 
 -- calculate all geolocation schemes from what3words
+{-
+   sample w3w responses when looking up words
+   eg
+   https://api.what3words.com/v3/convert-to-coordinates?words=filled.count.soap&key=[API-KEY]
 
 
-w3wDecoder : Decoder W3Words
-w3wDecoder =
-    Decode.succeed W3Words
+   200 with:
+   {"country":"GB","square":{"southwest":{"lng":-0.195543,"lat":51.520833},"northeast":{"lng":-0.195499,"lat":51.52086}},"nearestPlace":"Bayswater, London","coordinates":{"lng":-0.195521,"lat":51.520847},"words":"filled.count.soap"
+   ,"language":"en","map":"https:\/\/w3w.co\/filled.count.soap"}
+
+   400 with:
+   {"error":{"code":"BadWords","message":"words must be a valid 3 word address, such as filled.count.soap or \/\/\/filled.count.soap"}}
+
+
+   sample w3w responses when looking up coordinates:
+   eg: https://api.what3words.com/v3/convert-to-3wa?coordinates=51.521251%2C-0.203586&key=[API-KEY]
+
+   {"country":"ZZ","square":{"southwest":{"lng":0,"lat":0},"northeast":{"lng":0.000027,"lat":0.000027}},"nearestPlace":"","coordinates":{"lng":0.000013,"lat":0.000013},"words":"prosecuted.amplification.showings","language":"en","ma
+   p":"https:\/\/w3w.co\/prosecuted.amplification.showings"}
+
+-}
+
+
+w3wApiResponseDecoder : Decoder W3wApiResponse
+w3wApiResponseDecoder =
+    let
+        coordinatesDecoder =
+            Decode.succeed W3wApiResponseCoordinates
+                |> required "lng" float
+                |> required "lat" float
+    in
+    Decode.succeed W3wApiResponse
         |> required "words" string
+        |> required "nearestPlace" string
+        |> required "coordinates" coordinatesDecoder
 
 
 fetchRemoteCoords : Model -> Cmd Msg
@@ -384,28 +402,18 @@ fetchRemoteCoords model =
 
                         latS =
                             pos.lat |> String.fromFloat
-
-                        decoder =
-                            Decode.map
-                                (\s -> String.split "." s.words)
-                                w3wDecoder
                     in
                     Http.get
-                        { url = "/w3w/c2w?lon=" ++ lonS ++ "&lat=" ++ latS
-                        , expect = Http.expectJson GotW3w decoder
+                        { url = "/w3w/c2w?lon=" ++ latS ++ "&lat=" ++ lonS
+                        , expect = Http.expectJson GotW3wWords w3wApiResponseDecoder
                         }
 
         Just parsedWords ->
             let
                 words =
                     String.join "." parsedWords
-
-                decoder =
-                    Decode.succeed PositionDec
-                        |> requiredAt [ "coordinates", "lng" ] float
-                        |> requiredAt [ "coordinates", "lat" ] float
             in
             Http.get
                 { url = "/w3w/w2c?words=" ++ words
-                , expect = Http.expectJson GotW3wCoords decoder
+                , expect = Http.expectJson GotW3wCoords w3wApiResponseDecoder
                 }

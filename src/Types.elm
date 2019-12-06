@@ -8,17 +8,13 @@ type Msg
     = UserTyped String
     | UserEnteredSymbol String
     | UserClickedClear
-    | GotW3w (Result Http.Error (List String))
-    | GotW3wCoords (Result Http.Error PositionDec)
+    | GotW3wWords (Result Http.Error W3wApiResponse)
+    | GotW3wCoords (Result Http.Error W3wApiResponse)
     | UserClickedSetFindMe
     | UserClickedSetFindLocation
     | GotDeviceLocation PositionBrowser
     | GotNewInputValue String
     | NoOp
-
-
-type alias W3Words =
-    { words : String }
 
 
 type alias DecCoord =
@@ -42,7 +38,9 @@ type alias PositionDms =
 
 
 type alias PositionW3w =
-    List String
+    { words : List String
+    , nearestPlace : String
+    }
 
 
 type alias PositionBrowser =
@@ -71,6 +69,17 @@ type alias Model =
     , positionW3w : RemoteData String PositionW3w
     , viewType : ViewType
     , browserLocation : RemoteData String PositionBrowser
+    }
+
+
+type alias W3wApiResponseCoordinates =
+    { lng : Float, lat : Float }
+
+
+type alias W3wApiResponse =
+    { words : String
+    , nearestPlace : String
+    , coordinates : W3wApiResponseCoordinates
     }
 
 

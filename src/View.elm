@@ -269,8 +269,11 @@ renderPosW3w model =
                 Waiting ->
                     "(pending)"
 
-                Success words ->
-                    String.join " " words
+                Success w3wPos ->
+                    let
+                        nearestPlace = if w3wPos.nearestPlace == "" then "" else " (" ++ w3wPos.nearestPlace ++ ")"
+                    in
+                    (String.join " " w3wPos.words) ++ nearestPlace
 
                 Failure message ->
                     "(not found)"
