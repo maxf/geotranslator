@@ -13,7 +13,7 @@ type Msg
     | UserClickedSetFindMe
     | UserClickedSetFindLocation
     | GotDeviceLocation PositionBrowser
-    | GotCursorPosition (Int, String)
+    | GotNewInputValue String
     | NoOp
 
 

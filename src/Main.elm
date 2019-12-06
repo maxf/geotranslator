@@ -1,7 +1,6 @@
 port module Main exposing (main)
 
 import Browser
-import Browser.Dom exposing (focus)
 import Http
 import Json.Decode as Decode exposing (Decoder, float, map, string)
 import Json.Decode.Pipeline exposing (required, requiredAt)
@@ -25,25 +24,24 @@ main =
 port getCurrentLocation : String -> Cmd msg
 
 
-port gotDeviceLocation : (PositionBrowser -> msg) -> Sub msg
-
-
-port gotCursorPosition : (( Int, String ) -> msg) -> Sub msg
-
-
 port stopGeolocation : String -> Cmd msg
 
 
-port getCursorPosition : String -> Cmd msg
+port injectInputCharacter : ( String, String ) -> Cmd msg
+
+
+port gotDeviceLocation : (PositionBrowser -> msg) -> Sub msg
+
+
+port injectedInputCharacter : (String -> msg) -> Sub msg
 
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
         [ gotDeviceLocation GotDeviceLocation
-        , gotCursorPosition GotCursorPosition
+        , injectedInputCharacter GotNewInputValue
         ]
-
 
 
 withNewUserInput : String -> Model -> Model
@@ -58,20 +56,6 @@ withNewUserInput value model =
         |> convertInput
 
 
-withNewSymbol : Int -> String -> Model -> Model
-withNewSymbol pos symbol model =
-    let
-        old = model.userInput
-        new =
-            String.concat
-                [ String.slice 0 pos old
-                , symbol
-                , String.slice pos (String.length old) old
-                ]
-    in
-        { model | userInput = new } |> convertInput
-
-
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
@@ -83,19 +67,13 @@ update msg model =
             ( newModel, fetchRemoteCoords newModel )
 
         UserEnteredSymbol char ->
-            ( model-- |> withNewUserInput (model.userInput ++ char)
-            , getCursorPosition char
-            )
+            ( model, injectInputCharacter ( char, "input" ) )
 
         UserClickedClear ->
-            ( model |> withNewUserInput ""
-            , Task.attempt (\_ -> NoOp) (focus "input")
-            )
+            ( model |> withNewUserInput "", Cmd.none )
 
-        GotCursorPosition (position, char) ->
-            ( model |> withNewSymbol position char
-            , Task.attempt (\_ -> NoOp) (focus "input")
-            )
+        GotNewInputValue text ->
+            ( model |> withNewUserInput text, Cmd.none )
 
         GotW3w (Err error) ->
             ( { model

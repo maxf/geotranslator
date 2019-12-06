@@ -54,10 +54,13 @@
        navigator.geolocation.clearWatch(watchId);
      });
 
-
-     app.ports.getCursorPosition.subscribe(symbol => {
-       console.log("sel", document.getElementById('input').selectionStart);
-       app.ports.gotCursorPosition.send([document.getElementById('input').selectionStart, symbol]);
+     app.ports.injectInputCharacter.subscribe(([character, inputId]) => {
+       const inputEl = document.getElementById(inputId);
+       const old = inputEl.value;
+       const position = inputEl.selectionStart;
+       inputEl.value = old.slice(0, position) + character + old.slice(position, old.length)
+       inputEl.focus();
+       app.ports.injectedInputCharacter.send(inputEl.value);
      });
 
 
