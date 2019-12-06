@@ -115,7 +115,15 @@ renderStatus model =
             [ text "Finding your location" ]
 
         Failure error ->
-            [ el [ Font.color colour4 ] (text <| "Error: " ++ error) ]
+            let
+                secondMessage =
+                    case model.positionDec of
+                        Nothing ->
+                            ". Retrying."
+                        Just _ ->
+                            ". Showing latest known location"
+            in
+                [ paragraph [ Font.color colour4 ] [text <| "Error: " ++ error ++ secondMessage] ]
 
         Success _ ->
             [ text "Your location:" ]
