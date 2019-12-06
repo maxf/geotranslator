@@ -89,7 +89,7 @@ render model =
                 , Font.size 12
                 , alignRight
                 ]
-                [ text <| model.message ++ "(v0.03)" ]
+                [ text <| model.message ++ "(v0.04)" ]
             ]
 
 
