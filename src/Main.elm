@@ -82,69 +82,98 @@ update msg model =
             ( model |> withNewUserInput text, Cmd.none )
 
         GotW3wWords (Err error) ->
-            ( { model
-                | message = "W3W API error: " ++ fromHttpError error
-                , positionW3w = Failure "Error"
-              }
-            , Cmd.none
-            )
+            case model.viewType of
+                FindMe ->
+                    ( { model
+                        | message = "W3W API error: " ++ fromHttpError error
+                        , positionW3w = Failure "Error"
+                      }
+                    , Cmd.none
+                    )
+
+                _ ->
+                    -- ignore w3w callbacks if the user has moved away from the FindMe screen
+                    ( model, Cmd.none )
 
         GotW3wWords (Ok w3wPosition) ->
-            ( { model
-                | message = ""
-                , positionW3w = Success (PositionW3w (String.split "." w3wPosition.words) w3wPosition.nearestPlace)
-              }
-            , Cmd.none
-            )
+            case model.viewType of
+                FindMe ->
+                    ( { model
+                        | message = ""
+                        , positionW3w = Success (PositionW3w (String.split "." w3wPosition.words) w3wPosition.nearestPlace)
+                      }
+                    , Cmd.none
+                    )
+
+                _ ->
+                    -- ignore w3w callbacks if the user has moved away from the FindMe screen
+                    ( model, Cmd.none )
 
         GotW3wCoords (Err error) ->
-            ( { model
-                | message = "W3W API error: " ++ fromHttpError error
-                , positionW3w = Failure "got error from w3w"
-              }
-            , Cmd.none
-            )
+            case model.viewType of
+                FindMe ->
+                    ( { model
+                        | message = "W3W API error: " ++ fromHttpError error
+                        , positionW3w = Failure "got error from w3w"
+                      }
+                    , Cmd.none
+                    )
+
+                _ ->
+                    -- ignore w3w callbacks if the user has moved away from the FindMe screen
+                    ( model, Cmd.none )
 
         GotW3wCoords (Ok pos) ->
-            let
-                dec =
-                    PositionDec pos.coordinates.lng pos.coordinates.lat
+            case model.viewType of
+                FindMe ->
+                    let
+                        dec =
+                            PositionDec pos.coordinates.lng pos.coordinates.lat
 
-                w3w =
-                    PositionW3w (String.split "." pos.words) pos.nearestPlace
-            in
-            ( { model
-                | message = ""
-                , positionDec = Just dec
-                , positionDms = Just (dec2dms dec)
-                , positionW3w = Success w3w
-              }
-            , Cmd.none
-            )
+                        w3w =
+                            PositionW3w (String.split "." pos.words) pos.nearestPlace
+                    in
+                    ( { model
+                        | message = ""
+                        , positionDec = Just dec
+                        , positionDms = Just (dec2dms dec)
+                        , positionW3w = Success w3w
+                      }
+                    , Cmd.none
+                    )
+
+                _ ->
+                    -- ignore w3w callbacks if the user has moved away from the FindMe screen
+                    ( model, Cmd.none )
 
         UserClickedBack ->
-            ( initialModel, Cmd.none )
+            ( initialModel, stopGeolocation "" )
 
         GotDeviceLocation location ->
-            if location.error /= "" then
-                ( { model
-                    | browserLocation = Failure location.error
-                    , message = location.error
-                  }
-                , Cmd.none
-                )
+            case model.viewType of
+                FindMe ->
+                    if location.error /= "" then
+                        ( { model
+                            | browserLocation = Failure location.error
+                            , message = location.error
+                          }
+                        , Cmd.none
+                        )
 
-            else
-                let
-                    newModel =
-                        modelFromDec
-                            True
-                            "Got location from geolocation API"
-                            (location.lon |> roundTo 100000)
-                            (location.lat |> roundTo 100000)
-                            { model | browserLocation = Success location }
-                in
-                ( newModel, fetchRemoteCoords newModel )
+                    else
+                        let
+                            newModel =
+                                modelFromDec
+                                    True
+                                    "Got location from geolocation API"
+                                    (location.lon |> roundTo 100000)
+                                    (location.lat |> roundTo 100000)
+                                    { model | browserLocation = Success location }
+                        in
+                        ( newModel, fetchRemoteCoords newModel )
+
+                _ ->
+                    ( model, Cmd.none )
 
         NoOp ->
             ( model, Cmd.none )

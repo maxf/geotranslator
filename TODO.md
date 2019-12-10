@@ -1,3 +1,4 @@
+
 - eastings northings
 - URL hash
 - Prevent direct calls to API - difficult because app can be offline
@@ -13,3 +14,4 @@
 - [DONE] refocus
 - [DONE] insert symbol at right place
 - [DONE] Initial big screen with 2 buttons
+- [DONE] [BUG] stop callbacks when leaving YourLocation screen
