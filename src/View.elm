@@ -124,8 +124,8 @@ renderPage model =
             ]
 
         SelectMode ->
-            [ row
-                [ padding 50, spacing 20, width fill ]
+            [ column
+                [ padding 50, spacing 20, width fill, Font.center ]
                 [ Input.button startButtonStyle
                     { onPress = Just UserChoseFindMe
                     , label = text "Find me"
