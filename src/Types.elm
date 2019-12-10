@@ -10,10 +10,11 @@ type Msg
     | UserClickedClear
     | GotW3wWords (Result Http.Error W3wApiResponse)
     | GotW3wCoords (Result Http.Error W3wApiResponse)
-    | UserClickedSetFindMe
-    | UserClickedSetFindLocation
+    | UserClickedBack
     | GotDeviceLocation PositionBrowser
     | GotNewInputValue String
+    | UserChoseFindLocation
+    | UserChoseFindMe
     | NoOp
 
 
@@ -48,7 +49,8 @@ type alias PositionBrowser =
 
 
 type ViewType
-    = FindLocation
+    = SelectMode
+    | FindLocation
     | FindMe
 
 

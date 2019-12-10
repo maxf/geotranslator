@@ -32,6 +32,14 @@ colour5 =
     rgb255 150 200 150
 
 
+backButtonStyle =
+    [ Background.color colour3
+    , padding 8
+    , Border.rounded 5
+    , Font.size 14
+    ]
+
+
 positionBoxStyle =
     [ Background.color colour2
     , padding 8
@@ -77,20 +85,68 @@ render model =
     <|
         column
             [ padding 5, spacing 15, width fill ]
-            [ renderSwitchViewButton model.viewType
+            (renderPage model)
+
+
+renderDebugMessage : String -> Element Msg
+renderDebugMessage message =
+    paragraph
+        [ Font.color colour3
+        , Font.size 12
+        , alignRight
+        ]
+        [ text <| message ++ " (v0.04)" ]
+
+
+renderPage : Model -> List (Element Msg)
+renderPage model =
+    case model.viewType of
+        FindMe ->
+            [ renderBackButton
             , renderTitle model
             , renderInputBox model
             , renderPosDec model
             , renderPosDms model
             , renderPosW3w model
             , row [ centerX ] [ renderMapButton model.positionDec ]
-            , paragraph
-                [ Font.color (rgba 9 9 9 1)
-                , Font.size 12
-                , alignRight
-                ]
-                [ text <| model.message ++ "(v0.04)" ]
+            , renderDebugMessage model.message
             ]
+
+        FindLocation ->
+            [ renderBackButton
+            , renderTitle model
+            , renderInputBox model
+            , renderPosDec model
+            , renderPosDms model
+            , renderPosW3w model
+            , row [ centerX ] [ renderMapButton model.positionDec ]
+            , renderDebugMessage model.message
+            ]
+
+        SelectMode ->
+            [ row
+                [ padding 50, spacing 20, width fill ]
+                [ Input.button startButtonStyle
+                    { onPress = Just UserChoseFindMe
+                    , label = text "Find me"
+                    }
+                , Input.button startButtonStyle
+                    { onPress = Just UserChoseFindLocation
+                    , label = text "Find a location"
+                    }
+                ]
+            , renderDebugMessage model.message
+            ]
+
+
+startButtonStyle =
+    [ Background.color colour3
+    , padding 40
+    , Font.center
+    , centerX
+    , width (px 200)
+    , Border.rounded 10
+    ]
 
 
 renderTitle : Model -> Element Msg
@@ -107,6 +163,9 @@ renderTitle model =
             FindLocation ->
                 [ text "Find a location" ]
 
+            SelectMode ->
+                []
+
 
 renderStatus : Model -> List (Element Msg)
 renderStatus model =
@@ -120,10 +179,11 @@ renderStatus model =
                     case model.positionDec of
                         Nothing ->
                             ". Retrying."
+
                         Just _ ->
                             ". Showing latest known location"
             in
-                [ paragraph [ Font.color colour4 ] [text <| "Error: " ++ error ++ secondMessage] ]
+            [ paragraph [ Font.color colour4 ] [ text <| "Error: " ++ error ++ secondMessage ] ]
 
         Success _ ->
             [ text "Your location:" ]
@@ -138,7 +198,7 @@ renderInputBox model =
         FindLocation ->
             renderFindLocationInput model
 
-        FindMe ->
+        _ ->
             none
 
 
@@ -282,11 +342,12 @@ renderPosW3w model =
                         [ spacing 5 ]
                         [ text <| String.join " " w3wPos.words
                         , if w3wPos.nearestPlace == "" then
-                              none
+                            none
+
                           else
-                              paragraph
-                                  [ Font.size 18, Font.color colour4 ]
-                                  [ text <| " (" ++ w3wPos.nearestPlace ++ ")" ]
+                            paragraph
+                                [ Font.size 18, Font.color colour4 ]
+                                [ text <| " (" ++ w3wPos.nearestPlace ++ ")" ]
                         ]
 
                 Failure message ->
@@ -313,23 +374,11 @@ renderMapButton pos =
                 }
 
 
-renderSwitchViewButton : ViewType -> Element Msg
-renderSwitchViewButton viewType =
+renderBackButton : Element Msg
+renderBackButton =
     Input.button
-        [ Background.color colour3
-        , padding 8
-        , Border.rounded 5
-        , Font.size 14
-        , alignRight
-        ]
+        backButtonStyle
     <|
-        case viewType of
-            FindMe ->
-                { onPress = Just UserClickedSetFindLocation
-                , label = text "Find another location"
-                }
-
-            FindLocation ->
-                { onPress = Just UserClickedSetFindMe
-                , label = text "Find me"
-                }
+        { onPress = Just UserClickedBack
+        , label = text "back"
+        }

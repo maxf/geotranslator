@@ -72,6 +72,12 @@ update msg model =
         UserClickedClear ->
             ( model |> withNewUserInput "", Cmd.none )
 
+        UserChoseFindLocation ->
+            ( { model | viewType = FindLocation }, Cmd.none )
+
+        UserChoseFindMe ->
+            ( { model | viewType = FindMe }, getCurrentLocation "" )
+
         GotNewInputValue text ->
             ( model |> withNewUserInput text, Cmd.none )
 
@@ -116,15 +122,8 @@ update msg model =
             , Cmd.none
             )
 
-        UserClickedSetFindLocation ->
-            ( { initialModel
-                | viewType = FindLocation
-                , browserLocation = NotAsked }
-            , stopGeolocation ""
-            )
-
-        UserClickedSetFindMe ->
-            ( { initialModel | viewType = FindMe }, getCurrentLocation "" )
+        UserClickedBack ->
+            ( initialModel, Cmd.none )
 
         GotDeviceLocation location ->
             if location.error /= "" then
@@ -160,14 +159,14 @@ initialModel =
     , positionDec = Nothing
     , positionDms = Nothing
     , positionW3w = NotAsked
-    , viewType = FindMe
-    , browserLocation = Waiting
+    , viewType = SelectMode
+    , browserLocation = NotAsked
     }
 
 
 init : ( Model, Cmd Msg )
 init =
-    ( initialModel, getCurrentLocation "" )
+    ( initialModel, Cmd.none )
 
 
 posDecRegex : Regex.Regex
