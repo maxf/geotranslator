@@ -10,6 +10,8 @@ type Msg
     | UserClickedClear
     | GotW3wWords (Result Http.Error W3wApiResponse)
     | GotW3wCoords (Result Http.Error W3wApiResponse)
+    | GotBngLatLon (Result Http.Error BngApiResponse)
+    | GotBngCoords (Result Http.Error BngApiResponse)
     | UserClickedBack
     | GotDeviceLocation PositionBrowser
     | GotNewInputValue String
@@ -44,6 +46,12 @@ type alias PositionW3w =
     }
 
 
+type alias PositionBng =
+    { easting : Float
+    , northing : Float
+    }
+
+
 type alias PositionBrowser =
     { lon : Float, lat : Float, error : String }
 
@@ -65,12 +73,20 @@ type alias Model =
     { userInput : String
     , message : String
     , inputIsValid : Bool
-    , parsedW3w : Maybe (List String) -- when user entered 3 words, but they've not been validated by API
-    , positionDec : Maybe PositionDec
-    , positionDms : Maybe PositionDms
-    , positionW3w : RemoteData String PositionW3w
     , viewType : ViewType
     , browserLocation : RemoteData String PositionBrowser
+
+    -- when user entered 3 words, but they've not been validated by API:
+    , parsedW3w : Maybe (List String)
+
+    -- latitude/longitude in decimal form:
+    , positionDec : RemoteData String PositionDec
+
+    -- What3Words
+    , positionW3w : RemoteData String PositionW3w
+
+    -- British National Grid Eastings/Northings
+    , positionBng : RemoteData String PositionBng
     }
 
 
@@ -82,6 +98,14 @@ type alias W3wApiResponse =
     { words : String
     , nearestPlace : String
     , coordinates : W3wApiResponseCoordinates
+    }
+
+
+type alias BngApiResponse =
+    { latitude : Float
+    , longitude : Float
+    , easting : Float
+    , northing : Float
     }
 
 
@@ -102,9 +126,6 @@ dec2dms dec =
 
         lonS =
             (lonM - lonMf) * 60
-
-        lonSr =
-            lonS |> roundTo precisionDms
 
         lonDir =
             if dec.lon > 0 then
@@ -128,9 +149,6 @@ dec2dms dec =
         latS =
             (latM - latMf) * 60
 
-        latSr =
-            latS |> roundTo precisionDms
-
         latDir =
             if dec.lat > 0 then
                 "N"
@@ -138,22 +156,14 @@ dec2dms dec =
             else
                 "S"
     in
-    { lon = DmsCoord lonDf lonMf lonSr lonDir
-    , lat = DmsCoord latDf latMf latSr latDir
+    { lon = DmsCoord lonDf lonMf lonS lonDir
+    , lat = DmsCoord latDf latMf latS latDir
     }
 
 
 
 -- sets number of decimals to show for approximately 10m accuracy
 -- https://en.wikipedia.org/wiki/Decimal_degrees#Precision
-
-
-precisionDec =
-    10000
-
-
-precisionDms =
-    100
 
 
 dms2dec : PositionDms -> PositionDec
@@ -165,7 +175,7 @@ dms2dec dms =
                 / 60
                 + dms.lon.seconds
                 / 3600
-                |> roundTo precisionDec
+
 
         latAbs =
             dms.lat.degrees
@@ -173,7 +183,6 @@ dms2dec dms =
                 / 60
                 + dms.lat.seconds
                 / 3600
-                |> roundTo precisionDec
 
         lon =
             if dms.lon.direction == "W" then

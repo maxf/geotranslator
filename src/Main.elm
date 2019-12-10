@@ -2,7 +2,7 @@ port module Main exposing (main)
 
 import Browser
 import Http
-import Json.Decode as Decode exposing (Decoder, float, map, string)
+import Json.Decode as Decode exposing (Decoder, float, map, map4, string)
 import Json.Decode.Pipeline exposing (required, requiredAt)
 import Json.Encode exposing (Value)
 import Regex
@@ -48,9 +48,9 @@ withNewUserInput : String -> Model -> Model
 withNewUserInput value model =
     { model
         | userInput = value
-        , positionDec = Nothing
-        , positionDms = Nothing
+        , positionDec = NotAsked
         , positionW3w = NotAsked
+        , positionBng = NotAsked
         , parsedW3w = Nothing
     }
         |> convertInput
@@ -81,9 +81,83 @@ update msg model =
         GotNewInputValue text ->
             ( model |> withNewUserInput text, Cmd.none )
 
+        GotBngCoords (Err error) ->
+            case model.viewType of
+                SelectMode ->
+                    -- ignore callbacks if the user has gone back to start screen
+                    ( model, Cmd.none )
+
+                _ ->
+                    ( { model
+                        | message = "BNG API error: " ++ fromHttpError error
+                        , positionBng = Failure "Error"
+                      }
+                    , Cmd.none
+                    )
+
+        GotBngCoords (Ok apiResponse) ->
+            case model.viewType of
+                SelectMode ->
+                    -- ignore callbacks if the user has gone back to start screen
+                    ( model, Cmd.none )
+
+                _ ->
+                    let
+                        posBng =
+                            PositionBng apiResponse.easting apiResponse.northing
+
+                        newModel =
+                            { model
+                                | message = ""
+                                , positionBng = Success posBng
+                            }
+                    in
+                    ( newModel, fetchRemoteCoords newModel )
+
+        GotBngLatLon (Err error) ->
+            case model.viewType of
+                SelectMode ->
+                    -- ignore callbacks if the user has gone back to start screen
+                    ( model, Cmd.none )
+
+                _ ->
+                    ( { model
+                        | message = "BNG API error: " ++ fromHttpError error
+                        , positionBng = Failure "Error"
+                      }
+                    , Cmd.none
+                    )
+
+        GotBngLatLon (Ok apiResponse) ->
+            case model.viewType of
+                SelectMode ->
+                    -- ignore callbacks if the user has gone back to start screen
+                    ( model, Cmd.none )
+
+                _ ->
+                    let
+                        dec =
+                            PositionDec apiResponse.longitude apiResponse.latitude
+
+                        bng =
+                            PositionBng apiResponse.easting apiResponse.northing
+
+                        newModel =
+                            { model
+                                | message = ""
+                                , positionDec = Success dec
+                                , positionBng = Success bng
+                            }
+                    in
+                    ( newModel, fetchRemoteCoords newModel )
+
         GotW3wWords (Err error) ->
             case model.viewType of
-                FindMe ->
+                SelectMode ->
+                    -- ignore callbacks if the user has gone back to start screen
+                    ( model, Cmd.none )
+
+                _ ->
                     ( { model
                         | message = "W3W API error: " ++ fromHttpError error
                         , positionW3w = Failure "Error"
@@ -91,27 +165,29 @@ update msg model =
                     , Cmd.none
                     )
 
-                _ ->
-                    -- ignore w3w callbacks if the user has moved away from the FindMe screen
-                    ( model, Cmd.none )
-
         GotW3wWords (Ok w3wPosition) ->
             case model.viewType of
-                FindMe ->
-                    ( { model
-                        | message = ""
-                        , positionW3w = Success (PositionW3w (String.split "." w3wPosition.words) w3wPosition.nearestPlace)
-                      }
-                    , Cmd.none
-                    )
+                SelectMode ->
+                    -- ignore callbacks if the user has gone back to start screen
+                    ( model, Cmd.none )
 
                 _ ->
-                    -- ignore w3w callbacks if the user has moved away from the FindMe screen
-                    ( model, Cmd.none )
+                    let
+                        newModel =
+                            { model
+                                | message = ""
+                                , positionW3w = Success (PositionW3w (String.split "." w3wPosition.words) w3wPosition.nearestPlace)
+                            }
+                    in
+                    ( newModel, fetchRemoteCoords newModel )
 
         GotW3wCoords (Err error) ->
             case model.viewType of
-                FindMe ->
+                SelectMode ->
+                    -- ignore callbacks if the user has gone back to start screen
+                    ( model, Cmd.none )
+
+                _ ->
                     ( { model
                         | message = "W3W API error: " ++ fromHttpError error
                         , positionW3w = Failure "got error from w3w"
@@ -119,32 +195,28 @@ update msg model =
                     , Cmd.none
                     )
 
-                _ ->
-                    -- ignore w3w callbacks if the user has moved away from the FindMe screen
-                    ( model, Cmd.none )
-
         GotW3wCoords (Ok pos) ->
             case model.viewType of
-                FindMe ->
+                SelectMode ->
+                    -- ignore callbacks if the user has gone back to start screen
+                    ( model, Cmd.none )
+
+                _ ->
                     let
                         dec =
                             PositionDec pos.coordinates.lng pos.coordinates.lat
 
                         w3w =
                             PositionW3w (String.split "." pos.words) pos.nearestPlace
-                    in
-                    ( { model
-                        | message = ""
-                        , positionDec = Just dec
-                        , positionDms = Just (dec2dms dec)
-                        , positionW3w = Success w3w
-                      }
-                    , Cmd.none
-                    )
 
-                _ ->
-                    -- ignore w3w callbacks if the user has moved away from the FindMe screen
-                    ( model, Cmd.none )
+                        newModel =
+                            { model
+                                | message = ""
+                                , positionDec = Success dec
+                                , positionW3w = Success w3w
+                            }
+                    in
+                    ( newModel, fetchRemoteCoords newModel )
 
         UserClickedBack ->
             ( initialModel, stopGeolocation "" )
@@ -166,8 +238,8 @@ update msg model =
                                 modelFromDec
                                     True
                                     "Got location from geolocation API"
-                                    (location.lon |> roundTo 100000)
-                                    (location.lat |> roundTo 100000)
+                                    location.lon
+                                    location.lat
                                     { model | browserLocation = Success location }
                         in
                         ( newModel, fetchRemoteCoords newModel )
@@ -185,9 +257,9 @@ initialModel =
     , message = ""
     , inputIsValid = False
     , parsedW3w = Nothing
-    , positionDec = Nothing
-    , positionDms = Nothing
+    , positionDec = NotAsked
     , positionW3w = NotAsked
+    , positionBng = NotAsked
     , viewType = SelectMode
     , browserLocation = NotAsked
     }
@@ -210,8 +282,19 @@ posDmsRegex =
         Regex.fromString "^\\s*([0-9]+)°\\s*([0-9]+)[′']\\s*([0-9.]+)[\"″]?\\s*([NS])\\s*,\\s*([0-9]+)°\\s*([0-9]+)[′']\\s*([0-9.]+)[\"″]?\\s*([WE])\\s*$"
 
 
+posBngRegex : Regex.Regex
+posBngRegex =
+    Maybe.withDefault Regex.never <|
+        Regex.fromString "(-?[0-9]{6})[^-0-9A-Za-z](-?[0-9]{6})"
+
+
 convertInput : Model -> Model
 convertInput model =
+    convertInputTryBng model
+
+
+convertInputTryBng : Model -> Model
+convertInputTryBng model =
     if model.userInput == "" then
         { model | message = "" }
 
@@ -219,30 +302,57 @@ convertInput model =
         let
             matches : List Regex.Match
             matches =
-                Regex.find posDecRegex model.userInput
+                Regex.find posBngRegex model.userInput
         in
         case matches of
             [ match ] ->
                 case match.submatches of
-                    [ Just lonString, Just latString ] ->
+                    [ Just eastingString, Just northingString ] ->
                         let
-                            lon =
-                                String.toFloat lonString |> Maybe.withDefault 0
+                            easting =
+                                String.toFloat eastingString |> Maybe.withDefault 0
 
-                            lat =
-                                String.toFloat latString |> Maybe.withDefault 0
+                            northing =
+                                String.toFloat northingString |> Maybe.withDefault 0
                         in
-                        if lon >= -180 && lon <= 180 && lat >= -90 && lat <= 90 then
-                            modelFromDec True "Found decimal" lon lat model
-
-                        else
-                            modelFromDec False "Dec Outside limits" 0 0 model
+                        modelFromBng True "Found BNG" easting northing model
 
                     _ ->
-                        modelFromDec False "Bad Dec regex matches" 0 0 model
+                        modelFromBng False "Bad BNG regex matches" 0 0 model
 
             _ ->
-                convertInputTryDms model
+                convertInputTryDec model
+
+
+convertInputTryDec : Model -> Model
+convertInputTryDec model =
+    let
+        matches : List Regex.Match
+        matches =
+            Regex.find posDecRegex model.userInput
+    in
+    case matches of
+        [ match ] ->
+            case match.submatches of
+                [ Just lonString, Just latString ] ->
+                    let
+                        lon =
+                            String.toFloat lonString |> Maybe.withDefault 0
+
+                        lat =
+                            String.toFloat latString |> Maybe.withDefault 0
+                    in
+                    if lon >= -180 && lon <= 180 && lat >= -90 && lat <= 90 then
+                        modelFromDec True "Found decimal" lon lat model
+
+                    else
+                        modelFromDec False "Dec Outside limits" 0 0 model
+
+                _ ->
+                    modelFromDec False "Bad Dec regex matches" 0 0 model
+
+        _ ->
+            convertInputTryDms model
 
 
 dmsInBounds : DmsCoord -> Bool
@@ -343,6 +453,14 @@ modelFromW3w valid message words model =
         | message = message
         , parsedW3w = words
         , inputIsValid = valid
+        , positionDec = Waiting
+        , positionW3w =
+            if valid then
+                Success { words = words |> Maybe.withDefault [], nearestPlace = "" }
+
+            else
+                Waiting
+        , positionBng = Waiting
     }
 
 
@@ -355,9 +473,9 @@ modelFromDms valid message lon lat model =
     { model
         | message = message
         , inputIsValid = valid
-        , positionDms = Just dms
-        , positionDec = Just (dms2dec dms)
+        , positionDec = Success (dms2dec dms)
         , positionW3w = Waiting
+        , positionBng = Waiting
     }
 
 
@@ -370,9 +488,24 @@ modelFromDec valid message lon lat model =
     { model
         | message = message
         , inputIsValid = valid
-        , positionDec = Just dec
-        , positionDms = Just (dec2dms dec)
+        , positionDec = Success dec
         , positionW3w = Waiting
+        , positionBng = Waiting
+    }
+
+
+modelFromBng : Bool -> String -> Float -> Float -> Model -> Model
+modelFromBng valid message easting northing model =
+    let
+        bng =
+            PositionBng easting northing
+    in
+    { model
+        | message = message
+        , inputIsValid = valid
+        , positionDec = Waiting
+        , positionW3w = Waiting
+        , positionBng = Success bng
     }
 
 
@@ -415,33 +548,101 @@ w3wApiResponseDecoder =
         |> required "coordinates" coordinatesDecoder
 
 
+bngApiResponseDecoder : Decoder BngApiResponse
+bngApiResponseDecoder =
+    -- example: {"DEGMINSECLNG":{"DEGREES":-1,"SECONDS":24.028476096768,"MINUTES":32},"EASTING":429157,"LONGITUDE":-1.54000791002688,"NORTHING":623009,"DEGMINSECLAT":{"DEGREES":55,"SECONDS":59.99859710664,"MINUTES":29},"LATITUDE":55.4999996103074}
+    -- example: {"DEGMINSECLNG":{"DEGREES":-1,"SECONDS":24,"MINUTES":32},"EASTING":451030.444044407,"LONGITUDE":-1.54,"ERROR":false,"DEGMINSECLAT":{"DEGREES":-5,"SECONDS":0,"MINUTES":33},"NORTHING":-6141064.83570885,"LATITUDE":-5.55}
+    Decode.map4 BngApiResponse
+        (Decode.field "LATITUDE" float)
+        (Decode.field "LONGITUDE" float)
+        (Decode.field "EASTING" float)
+        (Decode.field "NORTHING" float)
+
+
 fetchRemoteCoords : Model -> Cmd Msg
 fetchRemoteCoords model =
-    case model.parsedW3w of
-        Nothing ->
-            case model.positionDec of
-                Nothing ->
-                    Cmd.none
+    case model.positionDec of
+        Success dec ->
+            case model.positionBng of
+                Success bng ->
+                    case model.positionW3w of
+                        Success _ ->
+                            -- model is already complete
+                            Cmd.none
 
-                Just pos ->
-                    let
-                        lonS =
-                            pos.lon |> String.fromFloat
+                        _ ->
+                            fetchW3wFromDec dec
 
-                        latS =
-                            pos.lat |> String.fromFloat
-                    in
-                    Http.get
-                        { url = "/w3w/c2w?lon=" ++ latS ++ "&lat=" ++ lonS
-                        , expect = Http.expectJson GotW3wWords w3wApiResponseDecoder
-                        }
+                _ ->
+                    fetchBngFromDec dec
 
-        Just parsedWords ->
-            let
-                words =
-                    String.join "." parsedWords
-            in
-            Http.get
-                { url = "/w3w/w2c?words=" ++ words
-                , expect = Http.expectJson GotW3wCoords w3wApiResponseDecoder
-                }
+        _ ->
+            case model.positionBng of
+                Success bng ->
+                    fetchDecFromBng bng
+
+                _ ->
+                    case model.positionW3w of
+                        Success w3w ->
+                            fetchDecFromW3w w3w
+
+                        _ ->
+                            -- we have nothing to build model on
+                            Cmd.none
+
+
+fetchBngFromDec : PositionDec -> Cmd Msg
+fetchBngFromDec pos =
+    let
+        lon =
+            pos.lon |> String.fromFloat
+
+        lat =
+            pos.lat |> String.fromFloat
+    in
+    Http.get
+        { url = "/bng/latlon2bng?lon=" ++ lon ++ "&lat=" ++ lat
+        , expect = Http.expectJson GotBngCoords bngApiResponseDecoder
+        }
+
+
+fetchDecFromBng : PositionBng -> Cmd Msg
+fetchDecFromBng pos =
+    let
+        east =
+            pos.easting |> String.fromFloat
+
+        north =
+            pos.northing |> String.fromFloat
+    in
+    Http.get
+        { url = "/bng/bng2latlon?easting=" ++ east ++ "&northing=" ++ north
+        , expect = Http.expectJson GotBngLatLon bngApiResponseDecoder
+        }
+
+
+fetchW3wFromDec : PositionDec -> Cmd Msg
+fetchW3wFromDec dec =
+    let
+        lonS =
+            dec.lon |> String.fromFloat
+
+        latS =
+            dec.lat |> String.fromFloat
+    in
+    Http.get
+        { url = "/w3w/c2w?lon=" ++ latS ++ "&lat=" ++ lonS
+        , expect = Http.expectJson GotW3wWords w3wApiResponseDecoder
+        }
+
+
+fetchDecFromW3w : PositionW3w -> Cmd Msg
+fetchDecFromW3w w3w =
+    let
+        words =
+            String.join "." w3w.words
+    in
+    Http.get
+        { url = "/w3w/w2c?words=" ++ words
+        , expect = Http.expectJson GotW3wCoords w3wApiResponseDecoder
+        }

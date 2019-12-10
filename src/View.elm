@@ -8,7 +8,7 @@ import Element.Input as Input
 import Element.Region as Region
 import Html exposing (Html)
 import Html.Attributes
-import String exposing (fromFloat)
+import String exposing (fromFloat, fromInt)
 import Types exposing (..)
 
 
@@ -108,6 +108,7 @@ renderPage model =
             , renderPosDec model
             , renderPosDms model
             , renderPosW3w model
+            , renderPosBng model
             , row [ centerX ] [ renderMapButton model.positionDec ]
             , renderDebugMessage model.message
             ]
@@ -119,6 +120,7 @@ renderPage model =
             , renderPosDec model
             , renderPosDms model
             , renderPosW3w model
+            , renderPosBng model
             , row [ centerX ] [ renderMapButton model.positionDec ]
             , renderDebugMessage model.message
             ]
@@ -174,16 +176,7 @@ renderStatus model =
             [ text "Finding your location" ]
 
         Failure error ->
-            let
-                secondMessage =
-                    case model.positionDec of
-                        Nothing ->
-                            ". Retrying."
-
-                        Just _ ->
-                            ". Showing latest known location"
-            in
-            [ paragraph [ Font.color colour4 ] [ text <| "Error: " ++ error ++ secondMessage ] ]
+            [ paragraph [ Font.color colour4 ] [ text <| "Error: " ++ error ] ]
 
         Success _ ->
             [ text "Your location:" ]
@@ -259,14 +252,30 @@ renderPosDec model =
     let
         content =
             case model.positionDec of
-                Nothing ->
-                    none
+                Waiting ->
+                    text "(pending)"
 
-                Just pos ->
+                NotAsked ->
+                    text ""
+
+                Failure message ->
+                    text <| "Failed" ++ message
+
+                Success pos ->
+                    let
+                        lonString =
+                            pos.lon |> roundTo 100000 |> fromFloat
+
+                        latString =
+                            pos.lat |> roundTo 100000 |> fromFloat
+                    in
+
+
+
                     column
                         lonLatStyle
-                        [ "Longitude: " ++ fromFloat pos.lon |> text
-                        , "Latitude: " ++ fromFloat pos.lat |> text
+                        [ "Longitude: " ++ lonString |> text
+                        , "Latitude: " ++ latString |> text
                         ]
     in
     column
@@ -278,52 +287,55 @@ renderPosDec model =
 
 renderPosDms : Model -> Element Msg
 renderPosDms model =
-    let
-        lonString dms =
-            fromFloat dms.lon.degrees
-                ++ " degrees, "
-                ++ fromFloat dms.lon.minutes
-                ++ " minutes, "
-                ++ fromFloat dms.lon.seconds
-                ++ " seconds "
-                ++ (if dms.lon.direction == "W" then
-                        "West"
+    case model.positionDec of
+        Success pos ->
+            let
+                dms =
+                    dec2dms pos
 
-                    else
-                        "East"
-                   )
+                lonString =
+                    fromFloat dms.lon.degrees
+                        ++ " degrees, "
+                        ++ fromInt (round dms.lon.minutes)
+                        ++ " minutes, "
+                        ++ fromFloat (dms.lon.seconds |> roundTo 100)
+                        ++ " seconds "
+                        ++ (if dms.lon.direction == "W" then
+                                "West"
 
-        latString dms =
-            fromFloat dms.lat.degrees
-                ++ " degrees, "
-                ++ fromFloat dms.lat.minutes
-                ++ " minutes, "
-                ++ fromFloat dms.lat.seconds
-                ++ " seconds "
-                ++ (if dms.lat.direction == "N" then
-                        "North"
+                            else
+                                "East"
+                           )
 
-                    else
-                        "South"
-                   )
+                latString =
+                    fromFloat dms.lat.degrees
+                        ++ " degrees, "
+                        ++ fromInt (round dms.lat.minutes)
+                        ++ " minutes, "
+                        ++ fromFloat (dms.lat.seconds |> roundTo 100)
+                        ++ " seconds "
+                        ++ (if dms.lat.direction == "N" then
+                                "North"
 
-        pos =
-            case model.positionDms of
-                Nothing ->
-                    none
+                            else
+                                "South"
+                           )
 
-                Just dms ->
+                posString =
                     column
                         lonLatStyle
-                        [ paragraph [] [ "Longitude: " ++ lonString dms |> text ]
-                        , paragraph [] [ "Latitude: " ++ latString dms |> text ]
+                        [ paragraph [] [ "Longitude: " ++ lonString |> text ]
+                        , paragraph [] [ "Latitude: " ++ latString |> text ]
                         ]
-    in
-    column
-        positionBoxStyle
-        [ el positionBoxLabelStyle (text "DMS")
-        , pos
-        ]
+            in
+            column
+                positionBoxStyle
+                [ el positionBoxLabelStyle (text "DMS")
+                , posString
+                ]
+
+        _ ->
+            none
 
 
 renderPosW3w : Model -> Element Msg
@@ -360,18 +372,46 @@ renderPosW3w model =
         ]
 
 
-renderMapButton : Maybe PositionDec -> Element Msg
+renderPosBng : Model -> Element Msg
+renderPosBng model =
+    let
+        bngString =
+            case model.positionBng of
+                NotAsked ->
+                    text ""
+
+                Waiting ->
+                    text "(pending)"
+
+                Success pos ->
+                    column
+                        lonLatStyle
+                        [ "Easting: " ++ fromInt (round pos.easting) |> text
+                        , "Northing: " ++ fromInt (round pos.northing) |> text
+                        ]
+
+                Failure message ->
+                    text "(not found)"
+    in
+    column
+        positionBoxStyle
+        [ el positionBoxLabelStyle (text "National Grid")
+        , bngString
+        ]
+
+
+renderMapButton : RemoteData String PositionDec -> Element Msg
 renderMapButton pos =
     case pos of
-        Nothing ->
-            none
-
-        Just { lat, lon } ->
+        Success { lat, lon } ->
             newTabLink
                 mapLinkStyle
                 { url = "https://www.google.com/maps/search/?api=1&query=" ++ fromFloat lat ++ "," ++ fromFloat lon
                 , label = text "Open in Google Maps"
                 }
+
+        _ ->
+            none
 
 
 renderBackButton : Element Msg

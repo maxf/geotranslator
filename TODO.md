@@ -1,4 +1,4 @@
-
+- "words keep flicking if gps signal is weak so hard to read the text..." [stop button?]
 - eastings northings
 - URL hash
 - Prevent direct calls to API - difficult because app can be offline
