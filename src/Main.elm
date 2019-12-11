@@ -473,7 +473,12 @@ modelFromDms valid message lon lat model =
     { model
         | message = message
         , inputIsValid = valid
-        , positionDec = Success (dms2dec dms)
+        , positionDec =
+            if valid then
+                Success (dms2dec dms)
+
+            else
+                Waiting
         , positionW3w = Waiting
         , positionBng = Waiting
     }
@@ -488,7 +493,12 @@ modelFromDec valid message lon lat model =
     { model
         | message = message
         , inputIsValid = valid
-        , positionDec = Success dec
+        , positionDec =
+            if valid then
+                Success dec
+
+            else
+                Waiting
         , positionW3w = Waiting
         , positionBng = Waiting
     }
@@ -505,7 +515,12 @@ modelFromBng valid message easting northing model =
         , inputIsValid = valid
         , positionDec = Waiting
         , positionW3w = Waiting
-        , positionBng = Success bng
+        , positionBng =
+            if valid then
+                Success bng
+
+            else
+                Waiting
     }
 
 
