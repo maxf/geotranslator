@@ -92,7 +92,7 @@ router.get('/bng/latlon2bng', function(req, res, next) {
     const parsedUrl = url.parse(req.url, true);
     const lon = parsedUrl.query.lon;
     const lat = parsedUrl.query.lat;
-    proxiedUrl = `${bngBaseUrl}?method=LatLong2BNG&lat=${lat}&lon=${lon}`;
+    proxiedUrl = `${bngBaseUrl}?method=LatLongToBNG&lat=${lat}&lon=${lon}`;
     console.warn('requesting',proxiedUrl);
     request(proxiedUrl, function (error, response, body) {
       res.send(body);
