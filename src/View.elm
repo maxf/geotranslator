@@ -267,9 +267,6 @@ renderPosDec model =
                         latString =
                             pos.lat |> roundTo 100000 |> fromFloat
                     in
-
-
-
                     column
                         lonLatStyle
                         [ "Longitude: " ++ lonString |> text
@@ -285,55 +282,56 @@ renderPosDec model =
 
 renderPosDms : Model -> Element Msg
 renderPosDms model =
-    case model.positionDec of
-        Success pos ->
-            let
-                dms =
-                    dec2dms pos
+    let
+        content =
+            case model.positionDec of
+                Success pos ->
+                    let
+                        dms =
+                            dec2dms pos
 
-                lonString =
-                    fromFloat dms.lon.degrees
-                        ++ " degrees, "
-                        ++ fromInt (round dms.lon.minutes)
-                        ++ " minutes, "
-                        ++ fromFloat (dms.lon.seconds |> roundTo 100)
-                        ++ " seconds "
-                        ++ (if dms.lon.direction == "W" then
-                                "West"
+                        lonString =
+                            fromFloat dms.lon.degrees
+                                ++ " degrees, "
+                                ++ fromInt (round dms.lon.minutes)
+                                ++ " minutes, "
+                                ++ fromFloat (dms.lon.seconds |> roundTo 100)
+                                ++ " seconds "
+                                ++ (if dms.lon.direction == "W" then
+                                        "West"
 
-                            else
-                                "East"
-                           )
+                                    else
+                                        "East"
+                                   )
 
-                latString =
-                    fromFloat dms.lat.degrees
-                        ++ " degrees, "
-                        ++ fromInt (round dms.lat.minutes)
-                        ++ " minutes, "
-                        ++ fromFloat (dms.lat.seconds |> roundTo 100)
-                        ++ " seconds "
-                        ++ (if dms.lat.direction == "N" then
-                                "North"
+                        latString =
+                            fromFloat dms.lat.degrees
+                                ++ " degrees, "
+                                ++ fromInt (round dms.lat.minutes)
+                                ++ " minutes, "
+                                ++ fromFloat (dms.lat.seconds |> roundTo 100)
+                                ++ " seconds "
+                                ++ (if dms.lat.direction == "N" then
+                                        "North"
 
-                            else
-                                "South"
-                           )
-
-                posString =
+                                    else
+                                        "South"
+                                   )
+                    in
                     column
                         lonLatStyle
                         [ paragraph [] [ "Longitude: " ++ lonString |> text ]
                         , paragraph [] [ "Latitude: " ++ latString |> text ]
                         ]
-            in
-            column
-                positionBoxStyle
-                [ el positionBoxLabelStyle (text "DMS")
-                , posString
-                ]
 
-        _ ->
-            none
+                _ ->
+                    none
+    in
+    column
+        positionBoxStyle
+        [ el positionBoxLabelStyle (text "DMS")
+        , content
+        ]
 
 
 renderPosW3w : Model -> Element Msg
