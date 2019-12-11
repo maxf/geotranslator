@@ -95,7 +95,7 @@ renderDebugMessage message =
         , Font.size 12
         , alignRight
         ]
-        [ text <| message ++ " (v0.6.0)" ]
+        [ text <| message ++ " (v0.6.1)" ]
 
 
 renderPage : Model -> List (Element Msg)
