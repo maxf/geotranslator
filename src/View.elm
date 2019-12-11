@@ -46,7 +46,7 @@ positionBoxStyle =
     , spacing 5
     , width fill
     , Border.rounded 2
-    , Font.size 24
+    , Font.size 22
     ]
 
 
@@ -102,8 +102,7 @@ renderPage : Model -> List (Element Msg)
 renderPage model =
     case model.viewType of
         FindMe ->
-            [ renderBackButton
-            , renderTitle model
+            [ row [ spacing 10 ] [ renderBackButton, renderTitle model ]
             , renderInputBox model
             , renderPosDec model
             , renderPosDms model
@@ -114,8 +113,7 @@ renderPage model =
             ]
 
         FindLocation ->
-            [ renderBackButton
-            , renderTitle model
+            [ row [ spacing 10 ] [ renderBackButton, renderTitle model ]
             , renderInputBox model
             , renderPosDec model
             , renderPosDms model
@@ -420,5 +418,5 @@ renderBackButton =
         backButtonStyle
     <|
         { onPress = Just UserClickedBack
-        , label = text "back"
+        , label = text "‹ back"
         }
