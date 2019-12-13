@@ -250,15 +250,6 @@ renderPosDec model =
     let
         content =
             case model.positionDec of
-                Waiting ->
-                    text "(pending)"
-
-                NotAsked ->
-                    text ""
-
-                Failure message ->
-                    text <| "Failed" ++ message
-
                 Success pos ->
                     let
                         lonString =
@@ -272,6 +263,13 @@ renderPosDec model =
                         [ "Longitude: " ++ lonString |> text
                         , "Latitude: " ++ latString |> text
                         ]
+
+                Failure _ ->
+                    text "Error"
+
+                _ ->
+                    text ""
+
     in
     column
         positionBoxStyle
