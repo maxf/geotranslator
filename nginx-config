@@ -1,0 +1,62 @@
+##
+# You should look at the following URL's in order to grasp a solid understanding
+# of Nginx configuration files in order to fully unleash the power of Nginx.
+# http://wiki.nginx.org/Pitfalls
+# http://wiki.nginx.org/QuickStart
+# http://wiki.nginx.org/Configuration
+#
+# Generally, you will want to move this file somewhere, and start with a clean
+# file but keep this around for reference. Or just disable in sites-enabled.
+#
+# Please see /usr/share/doc/nginx-doc/examples/ for more detailed examples.
+##
+
+# Redirect http to https
+server {
+        listen 80 default_server;
+        listen [::]:80 default_server;
+        server_name _;
+        return 301 https://$host$request_uri;
+}
+
+# https://e98.me
+server {
+        listen 443 ssl;
+        server_name e98.me;
+        ssl_certificate /app/secrets/e98-fullchain.pem;
+        ssl_certificate_key /app/secrets/e98-privkey.pem;
+        location / {
+                proxy_pass http://localhost:3000;
+                proxy_http_version 1.1;
+                proxy_set_header Upgrade $http_upgrade;
+                proxy_set_header Connection 'upgrade';
+                proxy_set_header Host $host;
+                proxy_cache_bypass $http_upgrade;
+        }
+}
+
+# https://geo.e98.me
+server {
+        listen 443 ssl;
+        server_name geo.e98.me;
+        ssl_certificate /app/secrets/e98-wildcard-fullchain.pem;
+        ssl_certificate_key /app/secrets/e98-wildcard-privkey.pem;
+        location / {
+                proxy_pass http://localhost:3000;
+                proxy_http_version 1.1;
+                proxy_set_header Upgrade $http_upgrade;
+                proxy_set_header Connection 'upgrade';
+                proxy_set_header Host $host;
+                proxy_cache_bypass $http_upgrade;
+        }
+}
+
+
+# https://assets.e98.me
+server {
+        listen 443 ssl;
+        server_name assets.e98.me;
+        ssl_certificate /app/secrets/e98-wildcard-fullchain.pem;
+        ssl_certificate_key /app/secrets/e98-wildcard-privkey.pem;
+        root /var/www/html/assets;
+}
