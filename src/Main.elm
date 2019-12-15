@@ -606,19 +606,37 @@ fetchRemoteCoords model =
                             Cmd.none
 
                         _ ->
+                            -- we have dec and bng, so fetch w3w
                             fetchW3wFromDec dec
 
                 _ ->
-                    fetchBngFromDec dec
+                    case model.positionW3w of
+                        Success _ ->
+                            -- we have dec and w3w, get bng
+                            fetchBngFromDec dec
+                        _ ->
+                            -- we have dec only, fetch both w3w and bng
+                            Cmd.batch
+                                [ fetchBngFromDec dec
+                                , fetchW3wFromDec dec
+                                ]
 
         _ ->
             case model.positionBng of
                 Success bng ->
+                    -- we have bng, so get get and w3w
+                    -- except we don't have w3wFromBng
+                    -- so get decFromBng first, and
+                    -- so we'll do w3wFromDec next time
                     fetchDecFromBng bng
 
                 _ ->
                     case model.positionW3w of
                         Success w3w ->
+                            -- we have w3w, so get dec and bng
+                            -- except we don't have bngFromW3w
+                            -- so get decFromW3w first, and
+                            -- we'll do bngFromDec next time
                             fetchDecFromW3w w3w
 
                         _ ->

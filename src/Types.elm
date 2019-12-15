@@ -64,6 +64,7 @@ type ViewType
 
 type RemoteData error value
     = NotAsked
+    | Needed
     | Waiting
     | Failure error
     | Success value
