@@ -63,10 +63,11 @@ type ViewType
 
 
 type RemoteData error value
-    = NotAsked
-    | Waiting
-    | Failure error
-    | Success value
+    = NotAsked -- no need to do anything
+    | NeedToFetch -- will have to be fetch on next fetch loop
+    | WaitingForResponse -- XHR request sent
+    | Failure error -- XHR error
+    | Success value -- success
 
 
 type alias Model =
@@ -74,7 +75,6 @@ type alias Model =
     , message : String
     , inputIsValid : Bool
     , viewType : ViewType
-    , browserLocation : RemoteData String PositionBrowser
 
     -- when user entered 3 words, but they've not been validated by API:
     , parsedW3w : Maybe (List String)

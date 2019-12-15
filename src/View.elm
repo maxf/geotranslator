@@ -169,10 +169,7 @@ renderTitle model =
 
 renderStatus : Model -> List (Element Msg)
 renderStatus model =
-    case model.browserLocation of
-        Waiting ->
-            [ text "Finding your location" ]
-
+    case model.positionDec of
         Failure error ->
             [ paragraph [ Font.color colour4 ] [ text <| "Error: " ++ error ] ]
 
@@ -180,7 +177,7 @@ renderStatus model =
             [ text "Your location:" ]
 
         _ ->
-            [ none ]
+            [ text "Finding your location" ]
 
 
 renderInputBox : Model -> Element Msg
@@ -337,10 +334,14 @@ renderPosW3w model =
     let
         w3wString =
             case model.positionW3w of
+                NeedToFetch ->
+                    text ""
+
+
                 NotAsked ->
                     text ""
 
-                Waiting ->
+                WaitingForResponse ->
                     text "(pending)"
 
                 Success w3wPos ->
@@ -374,7 +375,7 @@ renderPosBng model =
                 NotAsked ->
                     text ""
 
-                Waiting ->
+                WaitingForResponse ->
                     text "(pending)"
 
                 Success pos ->
@@ -386,6 +387,10 @@ renderPosBng model =
 
                 Failure message ->
                     text "(not found)"
+
+                NeedToFetch ->
+                    text ""
+
     in
     column
         positionBoxStyle

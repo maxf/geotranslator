@@ -5,7 +5,7 @@
 - Docker
 
 
-- [BUG] when bng api fails, doesn't run w3w
+- [BUG] run w3w and bng XHR calls in parallels when both are Waiting
 
 - [DONE] Update w3w when tracking
 - [DONE] More realistic examples
