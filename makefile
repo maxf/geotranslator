@@ -1,10 +1,10 @@
 public/elm.js: src/*.elm
-	elm make src/Main.elm --output=public/javascripts/elm.js --debug
+	elm make src/Main.elm --output=server/public/elm.js --debug
 
 
 build:
 	elm make src/Main.elm --output=elm.js --optimize
-	uglifyjs elm.js > elm.js
+	uglifyjs elm.js > server/public/elm.js
 	rm elm.js
 
 install: build

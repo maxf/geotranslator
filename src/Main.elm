@@ -616,7 +616,7 @@ fetchBngFromDec pos =
             pos.lat |> String.fromFloat
     in
     Http.get
-        { url = "/bng/latlon2bng?lon=" ++ lon ++ "&lat=" ++ lat
+        { url = "/api/bng/latlon2bng?lon=" ++ lon ++ "&lat=" ++ lat
         , expect = Http.expectJson GotBngCoords bngApiResponseDecoder
         }
 
@@ -631,7 +631,7 @@ fetchDecFromBng pos =
             pos.northing |> String.fromFloat
     in
     Http.get
-        { url = "/bng/bng2latlon?easting=" ++ east ++ "&northing=" ++ north
+        { url = "/api/bng/bng2latlon?easting=" ++ east ++ "&northing=" ++ north
         , expect = Http.expectJson GotBngLatLon bngApiResponseDecoder
         }
 
@@ -646,7 +646,7 @@ fetchW3wFromDec dec =
             dec.lat |> String.fromFloat
     in
     Http.get
-        { url = "/w3w/c2w?lon=" ++ latS ++ "&lat=" ++ lonS
+        { url = "/api/w3w/c2w?lon=" ++ latS ++ "&lat=" ++ lonS
         , expect = Http.expectJson GotW3wWords w3wApiResponseDecoder
         }
 
@@ -658,6 +658,6 @@ fetchDecFromW3w w3w =
             String.join "." w3w.words
     in
     Http.get
-        { url = "/w3w/w2c?words=" ++ words
+        { url = "/api/w3w/w2c?words=" ++ words
         , expect = Http.expectJson GotW3wCoords w3wApiResponseDecoder
         }

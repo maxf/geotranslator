@@ -41,7 +41,10 @@ server {
         server_name geo.e98.me;
         ssl_certificate /app/secrets/e98-wildcard-fullchain.pem;
         ssl_certificate_key /app/secrets/e98-wildcard-privkey.pem;
-        location / {
+
+        root /home/ubuntu/geotranslator/public/
+
+        location /api {
                 proxy_pass http://localhost:3000;
                 proxy_http_version 1.1;
                 proxy_set_header Upgrade $http_upgrade;
@@ -49,14 +52,4 @@ server {
                 proxy_set_header Host $host;
                 proxy_cache_bypass $http_upgrade;
         }
-}
-
-
-# https://assets.e98.me
-server {
-        listen 443 ssl;
-        server_name assets.e98.me;
-        ssl_certificate /app/secrets/e98-wildcard-fullchain.pem;
-        ssl_certificate_key /app/secrets/e98-wildcard-privkey.pem;
-        root /var/www/html/assets;
 }

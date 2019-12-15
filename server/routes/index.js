@@ -11,9 +11,9 @@ const sampleW2cResponse = '{"country":"GB","square":{"southwest":{"lng":-2.35905
 const DEV = !!process.env.DEV;
 
 /* GET home page. */
-router.get('/', function(req, res, next) {
-  res.render('index', { title: 'GeoTranslator' });
-});
+//router.get('/', function(req, res, next) {
+//  res.render('index', { title: 'GeoTranslator' });
+//});
 
 
 const w3wApiKey = process.env.W3WAPIKEY;
@@ -24,7 +24,8 @@ if (!w3wApiKey) {
 
 const proxiedBaseUrl = 'https://api.what3words.com/v3';
 
-router.get('/w3w/w2c', function(req, res, next) {
+
+router.get('/api/w3w/w2c', function(req, res, next) {
   if (DEV) {
     console.warn('DEV');
     res.send(sampleW2cResponse);
@@ -39,7 +40,7 @@ router.get('/w3w/w2c', function(req, res, next) {
   }
 });
 
-router.get('/w3w/c2w', function(req, res, next) {
+router.get('/api/w3w/c2w', function(req, res, next) {
   if (DEV) {
     console.warn('DEV');
     res.send(sampleC2wResponse);
@@ -67,7 +68,7 @@ const bngBaseUrl = 'https://www.bgs.ac.uk/data/webservices/CoordConvert_LL_BNG.c
 const sampleBng2LatLonResponse = '{"DEGMINSECLNG":{"DEGREES":-1,"SECONDS":24.028476096768,"MINUTES":32},"EASTING":429157,"LONGITUDE":-1.54000791002688,"NORTHING":623009,"DEGMINSECLAT":{"DEGREES":55,"SECONDS":59.99859710664,"MINUTES":29},"LATITUDE":55.4999996103074}';
 const sampleLatLon2BngResponse = '{"DEGMINSECLNG":{"DEGREES":-1,"SECONDS":24,"MINUTES":32},"EASTING":451030.444044407,"LONGITUDE":-1.54,"ERROR":false,"DEGMINSECLAT":{"DEGREES":-5,"SECONDS":0,"MINUTES":33},"NORTHING":-6141064.83570885,"LATITUDE":-5.55}';
 
-router.get('/bng/bng2latlon', function(req, res, next) {
+router.get('/api/bng/bng2latlon', function(req, res, next) {
   if (DEV) {
     console.warn('DEV');
     res.send(sampleBng2LatLonResponse);
@@ -83,7 +84,7 @@ router.get('/bng/bng2latlon', function(req, res, next) {
   }
 });
 
-router.get('/bng/latlon2bng', function(req, res, next) {
+router.get('/api/bng/latlon2bng', function(req, res, next) {
   if (DEV) {
     console.warn('DEV');
     res.send(sampleLatLon2BngResponse);
