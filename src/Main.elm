@@ -479,8 +479,18 @@ modelFromDms valid message lon lat model =
 
             else
                 Waiting
-        , positionW3w = Waiting
-        , positionBng = Waiting
+        , positionW3w =
+            if valid then
+                Waiting
+
+            else
+                NotAsked
+        , positionBng =
+            if valid then
+                Waiting
+
+            else
+                NotAsked
     }
 
 
@@ -498,9 +508,19 @@ modelFromDec valid message lon lat model =
                 Success dec
 
             else
+                NotAsked
+        , positionW3w =
+            if valid then
                 Waiting
-        , positionW3w = Waiting
-        , positionBng = Waiting
+
+            else
+                NotAsked
+        , positionBng =
+            if valid then
+                Waiting
+
+            else
+                NotAsked
     }
 
 
