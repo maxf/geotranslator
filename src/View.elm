@@ -103,11 +103,10 @@ renderPage model =
     case model.viewType of
         FindMe ->
             [ row [ spacing 10 ] [ renderBackButton, renderTitle model ]
-            , renderInputBox model
+            , renderPosBng model
             , renderPosDec model
             , renderPosDms model
             , renderPosW3w model
-            , renderPosBng model
             , row [ centerX ] [ renderMapButton model.positionDec ]
             , renderDebugMessage model.message
             ]
@@ -115,6 +114,7 @@ renderPage model =
         FindLocation ->
             [ row [ spacing 10 ] [ renderBackButton, renderTitle model ]
             , renderInputBox model
+            , renderPosBng model
             , renderPosDec model
             , renderPosDms model
             , renderPosW3w model
