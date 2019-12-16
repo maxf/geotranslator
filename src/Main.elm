@@ -351,7 +351,6 @@ fetchRemoteCoords model =
 
                 _ ->
                     ( model, Cmd.none )
-
         NeedToFetch ->
             case model.positionBng of
                 Success bng ->
@@ -361,7 +360,6 @@ fetchRemoteCoords model =
 
                 _ ->
                     ( model, Cmd.none )
-
         _ ->
             ( model, Cmd.none )
 
