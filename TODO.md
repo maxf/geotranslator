@@ -1,12 +1,11 @@
 - "words keep flicking if gps signal is weak so hard to read the text..." [stop button?]
 - Prevent API DoS
 - serve all static assets (everything except API calls) from nginx
-- eastings northings as formula
+
 - Docker
+- "this looks like"
 
-
-- [BUG] run w3w and bng XHR calls in parallels when both are Waiting
-
+- [DONE] [BUG] run w3w and bng XHR calls in parallels when both are Waiting
 - [DONE] Update w3w when tracking
 - [DONE] More realistic examples
 - [DONE] handle W3W errors when offline
@@ -18,3 +17,4 @@
 - [DONE] Initial big screen with 2 buttons
 - [DONE] [BUG] stop callbacks when leaving YourLocation screen
 - [DONE] eastings northings
+- [WONT DO] eastings northings as formula
