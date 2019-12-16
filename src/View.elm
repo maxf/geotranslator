@@ -95,7 +95,28 @@ renderDebugMessage message =
         , Font.size 12
         , alignRight
         ]
-        [ text <| message ++ " (v0.6.1)" ]
+        [ text <| message ++ " (v0.6.2)" ]
+
+
+renderGeocodeGuess : Geocode -> Element Msg
+renderGeocodeGuess code =
+    paragraph positionBoxLabelStyle
+        [ case code of
+            Dec ->
+                text "What you typed looks like lon/lat decimal"
+
+            DMS ->
+                text "What you typed looks like lon/lat degrees"
+
+            W3W ->
+                text "What you typed looks like what3words"
+
+            BNG ->
+                text "What you typed looks like eastings/northings"
+
+            NoMatch ->
+                text ""
+        ]
 
 
 renderPage : Model -> List (Element Msg)
@@ -118,7 +139,6 @@ renderPage model =
             , renderPosDec model
             , renderPosDms model
             , renderPosW3w model
-            , renderPosBng model
             , row [ centerX ] [ renderMapButton model.positionDec ]
             , renderDebugMessage model.message
             ]
@@ -214,6 +234,7 @@ renderFindLocationInput model =
             , text = model.userInput
             , label = Input.labelHidden "Type anything"
             }
+        , renderGeocodeGuess model.matchedGeocode
         , wrappedRow
             [ spacing 10 ]
             [ Input.button symbolEntryStyle
@@ -266,7 +287,6 @@ renderPosDec model =
 
                 _ ->
                     text ""
-
     in
     column
         positionBoxStyle
@@ -324,7 +344,7 @@ renderPosDms model =
     in
     column
         positionBoxStyle
-        [ el positionBoxLabelStyle (text "DMS")
+        [ el positionBoxLabelStyle (text "Degrees")
         , content
         ]
 
@@ -336,7 +356,6 @@ renderPosW3w model =
             case model.positionW3w of
                 NeedToFetch ->
                     text ""
-
 
                 NotAsked ->
                     text ""
@@ -390,7 +409,6 @@ renderPosBng model =
 
                 NeedToFetch ->
                     text ""
-
     in
     column
         positionBoxStyle

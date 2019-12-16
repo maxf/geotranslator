@@ -106,14 +106,8 @@ update msg model =
                     let
                         posBng =
                             PositionBng apiResponse.easting apiResponse.northing
-
-                        newModel =
-                            { model
-                                | message = ""
-                                , positionBng = Success posBng
-                            }
                     in
-                    fetchRemoteCoords newModel
+                    fetchRemoteCoords { model | positionBng = Success posBng }
 
         GotBngLatLon (Err error) ->
             case model.viewType of
@@ -145,8 +139,7 @@ update msg model =
 
                         newModel =
                             { model
-                                | message = ""
-                                , positionDec = Success dec
+                                | positionDec = Success dec
                                 , positionBng = Success bng
                             }
                     in
@@ -176,8 +169,7 @@ update msg model =
                     let
                         newModel =
                             { model
-                                | message = ""
-                                , positionW3w = Success (PositionW3w (String.split "." w3wPosition.words) w3wPosition.nearestPlace)
+                                | positionW3w = Success (PositionW3w (String.split "." w3wPosition.words) w3wPosition.nearestPlace)
                             }
                     in
                     fetchRemoteCoords newModel
@@ -212,8 +204,7 @@ update msg model =
 
                         newModel =
                             { model
-                                | message = ""
-                                , positionDec = Success dec
+                                | positionDec = Success dec
                                 , positionW3w = Success w3w
                             }
                     in
@@ -242,8 +233,12 @@ update msg model =
 
                             newModel =
                                 model |> withNewUserInput locationString
+
+                            newNewModel =
+                                { newModel | message = fromFloat location.accuracy }
+
                         in
-                        fetchRemoteCoords newModel
+                        fetchRemoteCoords newNewModel
 
                 _ ->
                     ( model, Cmd.none )
@@ -257,6 +252,7 @@ initialModel =
     { userInput = ""
     , message = ""
     , inputIsValid = False
+    , matchedGeocode = NoMatch
     , parsedW3w = Nothing
     , positionDec = NotAsked
     , positionW3w = NotAsked
@@ -338,10 +334,6 @@ fetchRemoteCoords model =
                 NeedToFetch ->
                     case model.positionW3w of
                         NeedToFetch ->
-                            let
-                                _ =
-                                    Debug.log "frc" 4
-                            in
                             ( { model
                                 | positionBng = WaitingForResponse
                                 , positionW3w = WaitingForResponse

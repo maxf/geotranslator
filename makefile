@@ -1,5 +1,6 @@
 public/elm.js: src/*.elm
-	elm make src/Main.elm --output=server/public/elm.js --debug
+	elm make src/Main.elm --output=server/public/elm.js --debug || (osascript -e 'display notification "Elm compilation error"')
+
 
 
 build:

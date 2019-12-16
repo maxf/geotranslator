@@ -53,7 +53,11 @@ type alias PositionBng =
 
 
 type alias PositionBrowser =
-    { lon : Float, lat : Float, error : String }
+    { lon : Float
+    , lat : Float
+    , accuracy : Float
+    , error : String
+    }
 
 
 type ViewType
@@ -70,11 +74,22 @@ type RemoteData error value
     | Success value -- success
 
 
+type Geocode
+    = Dec -- Longitude/latitude (decimal values)
+    | DMS -- Longitude/latitude (degrees, minutes, seconds)
+    | W3W -- What3Words
+    | BNG -- British National Grid
+    | NoMatch
+
+
 type alias Model =
     { userInput : String
     , message : String
     , inputIsValid : Bool
     , viewType : ViewType
+
+    -- what geocoding type has been recognised
+    , matchedGeocode : Geocode
 
     -- when user entered 3 words, but they've not been validated by API:
     , parsedW3w : Maybe (List String)

@@ -1,14 +1,11 @@
 module MatchInput exposing (matchInput)
 
-import Types exposing (..)
 import Regex
+import Types exposing (..)
 
 
 matchInput : Model -> Model
 matchInput model =
-    let
-        _ = Debug.log "matching" model.userInput
-    in
     matchInputTryBng model
 
 
@@ -165,6 +162,7 @@ matchInputTryW3w model =
         _ ->
             modelFromW3w False "No W3W regexp matches" Nothing model
 
+
 posDecRegex : Regex.Regex
 posDecRegex =
     Maybe.withDefault Regex.never <|
@@ -188,6 +186,12 @@ modelFromBng valid message easting northing model =
     { model
         | message = message
         , inputIsValid = valid
+        , matchedGeocode =
+            if valid then
+                BNG
+
+            else
+                NoMatch
         , positionDec = NeedToFetch
         , positionW3w = NeedToFetch
         , positionBng =
@@ -198,12 +202,19 @@ modelFromBng valid message easting northing model =
                 NeedToFetch
     }
 
+
 modelFromW3w : Bool -> String -> Maybe (List String) -> Model -> Model
 modelFromW3w valid message words model =
     { model
         | message = message
         , parsedW3w = words
         , inputIsValid = valid
+        , matchedGeocode =
+            if valid then
+                W3W
+
+            else
+                NoMatch
         , positionDec = NeedToFetch
         , positionW3w =
             if valid then
@@ -224,6 +235,12 @@ modelFromDms valid message lon lat model =
     { model
         | message = message
         , inputIsValid = valid
+        , matchedGeocode =
+            if valid then
+                DMS
+
+            else
+                NoMatch
         , positionDec =
             if valid then
                 Success (dms2dec dms)
@@ -249,11 +266,17 @@ modelFromDec : Bool -> String -> DecCoord -> DecCoord -> Model -> Model
 modelFromDec valid message lon lat model =
     let
         dec =
-            PositionDec lon lat |> Debug.log ">"
+            PositionDec lon lat
     in
     { model
         | message = message
         , inputIsValid = valid
+        , matchedGeocode =
+            if valid then
+                Dec
+
+            else
+                NoMatch
         , positionDec =
             if valid then
                 Success dec

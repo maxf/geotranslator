@@ -25,9 +25,12 @@
 
      app.ports.getCurrentLocation.subscribe(data => {
        const success = position => {
+         console.log(position);
+
          app.ports.gotDeviceLocation.send({
            lon: position.coords.longitude,
            lat: position.coords.latitude,
+           accuracy: position.coords.accuracy,
            error: ''
          });
        };
