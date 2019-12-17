@@ -5,18 +5,19 @@ import Json.Encode
 
 
 type Msg
-    = UserTyped String
-    | UserEnteredSymbol String
-    | UserClickedClear
-    | GotW3wWords (Result Http.Error W3wApiResponse)
-    | GotW3wCoords (Result Http.Error W3wApiResponse)
+    = GotBngCoords (Result Http.Error BngApiResponse)
     | GotBngLatLon (Result Http.Error BngApiResponse)
-    | GotBngCoords (Result Http.Error BngApiResponse)
-    | UserClickedBack
     | GotDeviceLocation PositionBrowser
     | GotNewInputValue String
+    | GotW3wCoords (Result Http.Error W3wApiResponse)
+    | GotW3wWords (Result Http.Error W3wApiResponse)
     | UserChoseFindLocation
     | UserChoseFindMe
+    | UserClickedBack
+    | UserClickedClear
+    | UserClickedRefresh
+    | UserEnteredSymbol String
+    | UserTyped String
     | NoOp
 
 
@@ -33,7 +34,9 @@ type alias DmsCoord =
 
 
 type alias PositionDec =
-    { lon : DecCoord, lat : DecCoord }
+    { lon : DecCoord
+    , lat : DecCoord
+    }
 
 
 type alias PositionDms =
@@ -87,6 +90,7 @@ type alias Model =
     , message : String
     , inputIsValid : Bool
     , viewType : ViewType
+    , accuracy : Maybe Float -- meters
 
     -- what geocoding type has been recognised
     , matchedGeocode : Geocode

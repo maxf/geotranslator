@@ -21,12 +21,8 @@
          node: document.getElementById("elm")
      });
 
-     let watchId;
-
      app.ports.getCurrentLocation.subscribe(data => {
        const success = position => {
-         console.log(position);
-
          app.ports.gotDeviceLocation.send({
            lon: position.coords.longitude,
            lat: position.coords.latitude,
@@ -50,11 +46,7 @@
            error : reason
          });
        };
-       watchId = navigator.geolocation.watchPosition(success, error);
-     });
-
-     app.ports.stopGeolocation.subscribe(data => {
-       navigator.geolocation.clearWatch(watchId);
+       navigator.geolocation.getCurrentPosition(success, error);
      });
 
      app.ports.injectInputCharacter.subscribe(([character, inputId]) => {

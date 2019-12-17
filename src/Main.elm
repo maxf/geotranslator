@@ -69,6 +69,9 @@ update msg model =
         UserClickedClear ->
             ( model |> withNewUserInput "", Cmd.none )
 
+        UserClickedRefresh ->
+            ( model, getCurrentLocation "" )
+
         UserChoseFindLocation ->
             ( { model | viewType = FindLocation }, Cmd.none )
 
@@ -230,10 +233,9 @@ update msg model =
                             newModel =
                                 model |> withNewUserInput locationString
 
-                            newNewModel =
-                                { newModel | message = fromFloat location.accuracy }
                         in
-                        fetchRemoteCoords newNewModel
+                        fetchRemoteCoords { newModel | accuracy = Just location.accuracy }
+
 
                 _ ->
                     ( model, Cmd.none )
@@ -253,6 +255,7 @@ initialModel =
     , positionW3w = NotAsked
     , positionBng = NotAsked
     , viewType = SelectMode
+    , accuracy = Nothing
     }
 
 

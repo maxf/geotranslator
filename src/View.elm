@@ -123,7 +123,14 @@ renderPage : Model -> List (Element Msg)
 renderPage model =
     case model.viewType of
         FindMe ->
-            [ row [ spacing 10 ] [ renderBackButton, renderTitle model ]
+            [ row [ spacing 10, width fill ]
+                [ renderBackButton
+                , column [ width fill ]
+                    [ renderTitle model
+                    , renderAccuracy model.accuracy
+                    ]
+                , renderReload
+                ]
             , renderPosBng model
             , renderPosDec model
             , renderPosDms model
@@ -194,10 +201,33 @@ renderStatus model =
             [ paragraph [ Font.color colour4 ] [ text <| "Error: " ++ error ] ]
 
         Success _ ->
-            [ text "Your location:" ]
+            [ text "Your location " ]
 
         _ ->
             [ text "Finding your location" ]
+
+
+renderReload : Element Msg
+renderReload =
+    Input.button
+        (alignRight :: mapLinkStyle)
+        { onPress = Just UserClickedRefresh
+        , label = text "↻"
+        }
+
+
+renderAccuracy : Maybe Float -> Element Msg
+renderAccuracy accuracy =
+    case accuracy of
+        Nothing ->
+            el [ Font.size 14 ] (text "Please wait")
+
+        Just acc ->
+            let
+                accS =
+                    acc |> round |> fromInt
+            in
+            el [ Font.size 14 ] (text ("accuracy: " ++ accS ++ "m"))
 
 
 renderInputBox : Model -> Element Msg
