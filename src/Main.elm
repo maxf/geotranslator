@@ -61,11 +61,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         UserTyped value ->
-            let
-                newModel =
-                    model |> withNewUserInput value
-            in
-            fetchRemoteCoords newModel
+            fetchRemoteCoords (model |> withNewUserInput value)
 
         UserEnteredSymbol char ->
             ( model, injectInputCharacter ( char, "input" ) )
@@ -236,7 +232,6 @@ update msg model =
 
                             newNewModel =
                                 { newModel | message = fromFloat location.accuracy }
-
                         in
                         fetchRemoteCoords newNewModel
 
@@ -351,6 +346,7 @@ fetchRemoteCoords model =
 
                 _ ->
                     ( model, Cmd.none )
+
         NeedToFetch ->
             case model.positionBng of
                 Success bng ->
@@ -358,8 +354,19 @@ fetchRemoteCoords model =
                     , fetchDecFromBng bng
                     )
 
+                NeedToFetch ->
+                    case model.positionW3w of
+                        Success w3w ->
+                            ( { model | positionDec = WaitingForResponse }
+                            , fetchDecFromW3w w3w
+                            )
+
+                        _ ->
+                            ( model, Cmd.none )
+
                 _ ->
                     ( model, Cmd.none )
+
         _ ->
             ( model, Cmd.none )
 
