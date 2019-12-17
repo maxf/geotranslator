@@ -1,3 +1,4 @@
+- Speech to text
 - Prevent API DoS
 - Docker
 - API in Haskell
@@ -18,3 +19,4 @@
 - [WONT DO] eastings northings as formula
 - [DONE] serve all static assets (everything except API calls) from nginx
 - [DONE] prevent unexpected updates by providing a reload button and showing accuracy
+- [DONE] nginx compression

@@ -11,6 +11,10 @@
 # Please see /usr/share/doc/nginx-doc/examples/ for more detailed examples.
 ##
 
+#gzip on;
+gzip_types text/plain application/xml application/javascript application/json;
+gzip_proxied no-cache no-store private expired auth;
+
 # Redirect http to https
 server {
         listen 80 default_server;
@@ -23,8 +27,8 @@ server {
 server {
         listen 443 ssl;
         server_name e98.me;
-        ssl_certificate /app/secrets/e98-fullchain.pem;
-        ssl_certificate_key /app/secrets/e98-privkey.pem;
+        ssl_certificate /etc/letsencrypt/live/e98.me/fullchain.pem;
+        ssl_certificate_key /etc/letsencrypt/live/e98.me/privkey.pem;
         location / {
                 proxy_pass http://localhost:3000;
                 proxy_http_version 1.1;
@@ -35,17 +39,32 @@ server {
         }
 }
 
+
 # https://geo.e98.me
 server {
         listen 443 ssl;
         server_name geo.e98.me;
-        ssl_certificate /app/secrets/e98-wildcard-fullchain.pem;
-        ssl_certificate_key /app/secrets/e98-wildcard-privkey.pem;
-
-        root /home/ubuntu/geotranslator/public/
-
-        location /api {
+        ssl_certificate /etc/letsencrypt/live/e98.me-0001/fullchain.pem;
+        ssl_certificate_key /etc/letsencrypt/live/e98.me-0001/privkey.pem;
+        location / {
                 proxy_pass http://localhost:3000;
+                proxy_http_version 1.1;
+                proxy_set_header Upgrade $http_upgrade;
+                proxy_set_header Connection 'upgrade';
+                proxy_set_header Host $host;
+                proxy_cache_bypass $http_upgrade;
+        }
+}
+
+# https://dev-geo.e98.me
+server {
+        listen 443 ssl;
+        server_name dev-geo.e98.me;
+        ssl_certificate /etc/letsencrypt/live/e98.me-0001/fullchain.pem;
+        ssl_certificate_key /etc/letsencrypt/live/e98.me-0001/privkey.pem;
+
+        location / {
+                proxy_pass http://localhost:3001;
                 proxy_http_version 1.1;
                 proxy_set_header Upgrade $http_upgrade;
                 proxy_set_header Connection 'upgrade';
