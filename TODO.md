@@ -1,6 +1,6 @@
-- "words keep flicking if gps signal is weak so hard to read the text..." [stop button?]
 - Prevent API DoS
 - Docker
+- API in Haskell
 
 - [DONE] "this looks like"
 - [DONE] [BUG] run w3w and bng XHR calls in parallels when both are Waiting
@@ -17,3 +17,4 @@
 - [DONE] eastings northings
 - [WONT DO] eastings northings as formula
 - [DONE] serve all static assets (everything except API calls) from nginx
+- [DONE] prevent unexpected updates by providing a reload button and showing accuracy
