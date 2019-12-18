@@ -22,6 +22,10 @@ main =
         }
 
 
+
+-- Ports
+
+
 port getCurrentLocation : String -> Cmd msg
 
 
@@ -31,10 +35,26 @@ port stopGeolocation : String -> Cmd msg
 port injectInputCharacter : ( String, String ) -> Cmd msg
 
 
+port convertDecToOlc : ( Float, Float ) -> Cmd msg
+
+
+port convertOlcToDec : String -> Cmd msg
+
+
+
+-- Subscriptions
+
+
 port gotDeviceLocation : (PositionBrowser -> msg) -> Sub msg
 
 
 port injectedInputCharacter : (String -> msg) -> Sub msg
+
+
+port convertedDecToOlc : (( Bool, PositionOlc ) -> msg) -> Sub msg
+
+
+port convertedOlcToDec : (( Bool, PositionDec ) -> msg) -> Sub msg
 
 
 subscriptions : Model -> Sub Msg
@@ -42,6 +62,8 @@ subscriptions model =
     Sub.batch
         [ gotDeviceLocation GotDeviceLocation
         , injectedInputCharacter GotNewInputValue
+        , convertedDecToOlc GotOlcFromDec
+        , convertedOlcToDec GotDecFromOlc
         ]
 
 
@@ -52,6 +74,7 @@ withNewUserInput value model =
         , positionDec = NotAsked
         , positionW3w = NotAsked
         , positionBng = NotAsked
+        , positionOlc = NotAsked
         , parsedW3w = Nothing
     }
         |> matchInput
@@ -232,13 +255,39 @@ update msg model =
 
                             newModel =
                                 model |> withNewUserInput locationString
-
                         in
                         fetchRemoteCoords { newModel | accuracy = Just location.accuracy }
 
-
                 _ ->
                     ( model, Cmd.none )
+
+        GotOlcFromDec ( error, olc ) ->
+            fetchRemoteCoords
+                { model
+                    | positionOlc =
+                        if error then
+                            Failure "invalid"
+
+                        else
+                            Success (olc |> String.toUpper)
+                }
+
+        GotDecFromOlc ( error, dec ) ->
+            fetchRemoteCoords
+                { model
+                    | positionDec =
+                        if error then
+                            NotAsked
+
+                        else
+                            Success dec
+                    , positionOlc =
+                        if error then
+                            Failure "invalid"
+
+                        else
+                            model.positionOlc
+                }
 
         NoOp ->
             ( model, Cmd.none )
@@ -254,6 +303,7 @@ initialModel =
     , positionDec = NotAsked
     , positionW3w = NotAsked
     , positionBng = NotAsked
+    , positionOlc = NotAsked
     , viewType = SelectMode
     , accuracy = Nothing
     }
@@ -318,60 +368,87 @@ fetchRemoteCoords : Model -> ( Model, Cmd Msg )
 fetchRemoteCoords model =
     case model.positionDec of
         Success dec ->
-            case model.positionBng of
-                Success bng ->
-                    case model.positionW3w of
-                        NeedToFetch ->
-                            ( { model | positionW3w = WaitingForResponse }
-                            , fetchW3wFromDec dec
-                            )
-
-                        _ ->
-                            ( model, Cmd.none )
-
+            case model.positionOlc of
                 NeedToFetch ->
-                    case model.positionW3w of
+                    case model.positionBng of
                         NeedToFetch ->
-                            ( { model
-                                | positionBng = WaitingForResponse
-                                , positionW3w = WaitingForResponse
-                              }
-                            , Cmd.batch
-                                [ fetchBngFromDec dec
-                                , fetchW3wFromDec dec
-                                ]
-                            )
+                            case model.positionW3w of
+                                NeedToFetch ->
+                                    ( { model | positionOlc = WaitingForResponse, positionBng = WaitingForResponse, positionW3w = WaitingForResponse }
+                                    , Cmd.batch [ fetchOlcFromDec dec, fetchBngFromDec dec, fetchW3wFromDec dec ]
+                                    )
+
+                                _ ->
+                                    ( { model | positionOlc = WaitingForResponse, positionBng = WaitingForResponse }
+                                    , Cmd.batch [ fetchOlcFromDec dec, fetchBngFromDec dec ]
+                                    )
 
                         _ ->
-                            ( { model | positionBng = WaitingForResponse }
-                            , fetchBngFromDec dec
-                            )
+                            case model.positionW3w of
+                                NeedToFetch ->
+                                    ( { model | positionOlc = WaitingForResponse, positionW3w = WaitingForResponse }
+                                    , Cmd.batch [ fetchOlcFromDec dec, fetchW3wFromDec dec ]
+                                    )
+
+                                _ ->
+                                    ( { model | positionOlc = WaitingForResponse }
+                                    , fetchOlcFromDec dec
+                                    )
 
                 _ ->
-                    ( model, Cmd.none )
+                    case model.positionBng of
+                        NeedToFetch ->
+                            case model.positionW3w of
+                                NeedToFetch ->
+                                    ( { model | positionBng = WaitingForResponse, positionW3w = WaitingForResponse }
+                                    , Cmd.batch [ fetchBngFromDec dec, fetchW3wFromDec dec ]
+                                    )
+
+                                _ ->
+                                    ( { model | positionBng = WaitingForResponse }
+                                    , fetchBngFromDec dec
+                                    )
+
+                        _ ->
+                            case model.positionW3w of
+                                NeedToFetch ->
+                                    ( { model | positionW3w = WaitingForResponse }
+                                    , fetchW3wFromDec dec
+                                    )
+
+                                _ ->
+                                    ( model, Cmd.none )
 
         NeedToFetch ->
-            case model.positionBng of
-                Success bng ->
-                    ( { model | positionDec = WaitingForResponse }
-                    , fetchDecFromBng bng
-                    )
-
-                NeedToFetch ->
-                    case model.positionW3w of
-                        Success w3w ->
-                            ( { model | positionDec = WaitingForResponse }
-                            , fetchDecFromW3w w3w
-                            )
-
-                        _ ->
-                            ( model, Cmd.none )
+            case model.positionOlc of
+                Success olc ->
+                    ( { model | positionDec = WaitingForResponse }, fetchDecFromOlc olc )
 
                 _ ->
-                    ( model, Cmd.none )
+                    case model.positionBng of
+                        Success bng ->
+                            ( { model | positionDec = WaitingForResponse }, fetchDecFromBng bng )
+
+                        _ ->
+                            case model.positionW3w of
+                                Success w3w ->
+                                    ( { model | positionDec = WaitingForResponse }, fetchDecFromW3w w3w )
+
+                                _ ->
+                                    ( model, Cmd.none )
 
         _ ->
             ( model, Cmd.none )
+
+
+fetchDecFromOlc : PositionOlc -> Cmd Msg
+fetchDecFromOlc olc =
+    convertOlcToDec (olc |> String.toUpper)
+
+
+fetchOlcFromDec : PositionDec -> Cmd Msg
+fetchOlcFromDec dec =
+    convertDecToOlc ( dec.lon, dec.lat )
 
 
 fetchBngFromDec : PositionDec -> Cmd Msg

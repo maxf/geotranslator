@@ -6,7 +6,7 @@ import Types exposing (..)
 
 matchInput : Model -> Model
 matchInput model =
-    matchInputTryBng model
+    matchInputTryOlc model
 
 
 matchInputTryBng : Model -> Model
@@ -137,6 +137,40 @@ matchInputTryDms model =
             matchInputTryW3w model
 
 
+
+-- Open Location Code
+
+
+posOlcRegex : Regex.Regex
+posOlcRegex =
+    Maybe.withDefault Regex.never <|
+        Regex.fromString "^\\s*([a-zA-Z0-9]{8}\\+[a-zA-Z0-9]{2})\\s*$"
+
+
+matchInputTryOlc : Model -> Model
+matchInputTryOlc model =
+    let
+        matches : List Regex.Match
+        matches =
+            Regex.find posOlcRegex model.userInput
+    in
+    case matches of
+        [ match ] ->
+            case match.submatches of
+                [ Just code ] ->
+                    modelFromOlc True "Found Olc" (Just code) model
+
+                _ ->
+                    modelFromOlc False "Bad Olc match" Nothing model
+
+        _ ->
+            matchInputTryBng model
+
+
+
+-- What3words
+
+
 posW3wRegex : Regex.Regex
 posW3wRegex =
     Maybe.withDefault Regex.never <|
@@ -192,14 +226,68 @@ modelFromBng valid message easting northing model =
 
             else
                 NoMatch
-        , positionDec = NeedToFetch
-        , positionW3w = NeedToFetch
+        , positionDec =
+            if valid then
+                NeedToFetch
+
+            else
+                NotAsked
+        , positionW3w =
+            if valid then
+                NeedToFetch
+
+            else
+                NotAsked
+        , positionOlc =
+            if valid then
+                NeedToFetch
+
+            else
+                NotAsked
         , positionBng =
             if valid then
                 Success (PositionBng easting northing)
 
             else
                 NeedToFetch
+    }
+
+
+modelFromOlc : Bool -> String -> Maybe String -> Model -> Model
+modelFromOlc valid message olc model =
+    { model
+        | message = message
+        , inputIsValid = valid
+        , matchedGeocode =
+            if valid then
+                OLC
+
+            else
+                NoMatch
+        , positionOlc =
+            if valid then
+                Success (olc |> Maybe.withDefault "")
+
+            else
+                NeedToFetch
+        , positionDec =
+            if valid then
+                NeedToFetch
+
+            else
+                NotAsked
+        , positionBng =
+            if valid then
+                NeedToFetch
+
+            else
+                NotAsked
+        , positionW3w =
+            if valid then
+                NeedToFetch
+
+            else
+                NotAsked
     }
 
 
@@ -215,14 +303,30 @@ modelFromW3w valid message words model =
 
             else
                 NoMatch
-        , positionDec = NeedToFetch
         , positionW3w =
             if valid then
                 Success { words = words |> Maybe.withDefault [], nearestPlace = "" }
 
             else
                 NeedToFetch
-        , positionBng = NeedToFetch
+        , positionDec =
+            if valid then
+                NeedToFetch
+
+            else
+                NotAsked
+        , positionBng =
+            if valid then
+                NeedToFetch
+
+            else
+                NotAsked
+        , positionOlc =
+            if valid then
+                NeedToFetch
+
+            else
+                NotAsked
     }
 
 
@@ -259,6 +363,12 @@ modelFromDms valid message lon lat model =
 
             else
                 NotAsked
+        , positionOlc =
+            if valid then
+                NeedToFetch
+
+            else
+                NotAsked
     }
 
 
@@ -290,6 +400,12 @@ modelFromDec valid message lon lat model =
             else
                 NotAsked
         , positionBng =
+            if valid then
+                NeedToFetch
+
+            else
+                NotAsked
+        , positionOlc =
             if valid then
                 NeedToFetch
 

@@ -114,6 +114,9 @@ renderGeocodeGuess code =
             BNG ->
                 text "What you typed looks like eastings/northings"
 
+            OLC ->
+                text "What you typed looks like a Plus Code"
+
             NoMatch ->
                 text ""
         ]
@@ -135,6 +138,7 @@ renderPage model =
             , renderPosDec model
             , renderPosDms model
             , renderPosW3w model
+            , renderPosOlc model
             , row [ centerX ] [ renderMapButton model.positionDec ]
             , renderDebugMessage model.message
             ]
@@ -146,6 +150,7 @@ renderPage model =
             , renderPosDec model
             , renderPosDms model
             , renderPosW3w model
+            , renderPosOlc model
             , row [ centerX ] [ renderMapButton model.positionDec ]
             , renderDebugMessage model.message
             ]
@@ -293,6 +298,25 @@ renderFindLocationInput model =
         ]
 
 
+renderPosOlc : Model -> Element Msg
+renderPosOlc model =
+    let
+        content =
+            case model.positionOlc of
+                Success pos ->
+                    text pos
+                Failure _ ->
+                    text "Invalid Plus Code"
+                _ ->
+                    none
+    in
+    column
+        positionBoxStyle
+        [ el positionBoxLabelStyle (text "Plus Code")
+        , content
+        ]
+
+
 renderPosDec : Model -> Element Msg
 renderPosDec model =
     let
@@ -316,7 +340,7 @@ renderPosDec model =
                     text "Error"
 
                 _ ->
-                    text ""
+                    none
     in
     column
         positionBoxStyle

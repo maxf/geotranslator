@@ -9,6 +9,7 @@
     <link rel="apple-touch-icon" href="logo-192x192.png">
     <link rel="manifest" href="manifest.json">
     <script src="elm.js"></script>
+    <script src="openlocationcode.min.js" deferred></script>
   </head>
   <body>
     <div id="elm"></div>
@@ -58,6 +59,27 @@
        app.ports.injectedInputCharacter.send(inputEl.value);
      });
 
+     // Plus codes (aka open location code)
+     app.ports.convertOlcToDec.subscribe(code => {
+       let coord;
+       try {
+         coord = OpenLocationCode.decode(code);
+         app.ports.convertedOlcToDec.send([false, { lon: coord.longitudeCenter, lat: coord.latitudeCenter}]);
+       } catch (e) {
+         app.ports.convertedOlcToDec.send([true, { lon: NaN, lat: NaN }]);
+       }
+     });
+
+     app.ports.convertDecToOlc.subscribe(([lon, lat]) => {
+       let code;
+       try {
+         code = OpenLocationCode.encode(lat, lon);
+         app.ports.convertedDecToOlc.send([false, code]);
+       } catch (e) {
+         app.ports.convertedDecToOlc.send([true, ""]);
+       }
+
+     });
 
     </script>
 

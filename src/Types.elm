@@ -5,10 +5,12 @@ import Json.Encode
 
 
 type Msg
-    = GotBngCoords (Result Http.Error BngApiResponse)
-    | GotBngLatLon (Result Http.Error BngApiResponse)
-    | GotDeviceLocation PositionBrowser
+    = GotDeviceLocation PositionBrowser
     | GotNewInputValue String
+    | GotBngCoords (Result Http.Error BngApiResponse)
+    | GotBngLatLon (Result Http.Error BngApiResponse)
+    | GotOlcFromDec ( Bool, PositionOlc )
+    | GotDecFromOlc ( Bool, PositionDec )
     | GotW3wCoords (Result Http.Error W3wApiResponse)
     | GotW3wWords (Result Http.Error W3wApiResponse)
     | UserChoseFindLocation
@@ -41,6 +43,10 @@ type alias PositionDec =
 
 type alias PositionDms =
     { lon : DmsCoord, lat : DmsCoord }
+
+
+type alias PositionOlc =
+    String
 
 
 type alias PositionW3w =
@@ -82,6 +88,7 @@ type Geocode
     | DMS -- Longitude/latitude (degrees, minutes, seconds)
     | W3W -- What3Words
     | BNG -- British National Grid
+    | OLC -- Open Location Codes (aka Plus Codes)
     | NoMatch
 
 
@@ -106,6 +113,9 @@ type alias Model =
 
     -- British National Grid Eastings/Northings
     , positionBng : RemoteData String PositionBng
+
+    -- Open Location Codes
+    , positionOlc : RemoteData String PositionOlc
     }
 
 
@@ -194,7 +204,6 @@ dms2dec dms =
                 / 60
                 + dms.lon.seconds
                 / 3600
-
 
         latAbs =
             dms.lat.degrees
