@@ -244,9 +244,9 @@ modelFromBng valid message easting northing model =
 
             else
                 NotAsked
-        , positionBng =
+        , positionEastingNorthing =
             if valid then
-                Success (PositionBng easting northing)
+                Success (PositionEastingNorthing easting northing)
 
             else
                 NeedToFetch
@@ -276,7 +276,7 @@ modelFromOlc valid message olc model =
 
             else
                 NotAsked
-        , positionBng =
+        , positionEastingNorthing =
             if valid then
                 NeedToFetch
 
@@ -315,7 +315,7 @@ modelFromW3w valid message words model =
 
             else
                 NotAsked
-        , positionBng =
+        , positionEastingNorthing =
             if valid then
                 NeedToFetch
 
@@ -357,7 +357,7 @@ modelFromDms valid message lon lat model =
 
             else
                 NotAsked
-        , positionBng =
+        , positionEastingNorthing =
             if valid then
                 NeedToFetch
 
@@ -399,7 +399,7 @@ modelFromDec valid message lon lat model =
 
             else
                 NotAsked
-        , positionBng =
+        , positionEastingNorthing =
             if valid then
                 NeedToFetch
 

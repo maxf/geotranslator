@@ -2,6 +2,8 @@ module Types exposing (..)
 
 import Http
 import Json.Encode
+import Regex
+import String exposing (fromInt, slice)
 
 
 type Msg
@@ -54,10 +56,15 @@ type alias PositionW3w =
     , nearestPlace : String
     }
 
-
-type alias PositionBng =
+type alias PositionEastingNorthing =
     { easting : Float
     , northing : Float
+    }
+
+
+type alias PositionNgr =
+    { gridRef : String -- 2 letter grid reference
+    , numbers : String -- 2 to 8  numbers
     }
 
 
@@ -112,7 +119,7 @@ type alias Model =
     , positionW3w : RemoteData String PositionW3w
 
     -- British National Grid Eastings/Northings
-    , positionBng : RemoteData String PositionBng
+    , positionEastingNorthing : RemoteData String PositionEastingNorthing
 
     -- Open Location Codes
     , positionOlc : RemoteData String PositionOlc
@@ -251,3 +258,43 @@ fromHttpError error =
 
         Http.BadBody s ->
             "Bad body: " ++ s
+
+
+removeTrailingZeros : String -> String
+removeTrailingZeros s =
+    let
+        trailingZerosRegex =
+             Regex.fromString "0+$" |> Maybe.withDefault Regex.never
+
+    in
+        Regex.replace trailingZerosRegex (\_ -> "") s
+
+
+eastingNorthing2Ngr : PositionEastingNorthing -> PositionNgr
+eastingNorthing2Ngr pos =
+    let
+        shortEasting =
+            pos.easting |> round |> fromInt |> removeTrailingZeros
+
+        shortNorthing =
+            pos.northing |> round |> fromInt |> removeTrailingZeros
+
+        sel =
+            String.length shortEasting
+
+        snl =
+            String.length shortEasting
+
+        firstDigits = slice 0 1 shortEasting ++ slice 0 1 shortNorthing
+
+        gridRef =
+            lookupGridRef firstDigits
+
+        numberPart =
+            slice 1 200 shortEasting ++ slice 1 200 shortNorthing
+    in
+        PositionNgr gridRef numberPart
+
+lookupGridRef : String -> String
+lookupGridRef digits =
+    case digits of

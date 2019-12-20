@@ -417,7 +417,7 @@ renderPosBng : Model -> Element Msg
 renderPosBng model =
     let
         bngString =
-            case model.positionBng of
+            case model.positionEastingNorthing of
                 NotAsked ->
                     text ""
 

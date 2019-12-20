@@ -73,7 +73,7 @@ withNewUserInput value model =
         | userInput = value
         , positionDec = NotAsked
         , positionW3w = NotAsked
-        , positionBng = NotAsked
+        , positionEastingNorthing = NotAsked
         , positionOlc = NotAsked
         , parsedW3w = Nothing
     }
@@ -113,7 +113,7 @@ update msg model =
                 _ ->
                     ( { model
                         | message = "BNG API error: " ++ fromHttpError error
-                        , positionBng = Failure "Error"
+                        , positionEastingNorthing = Failure "Error"
                       }
                     , Cmd.none
                     )
@@ -127,9 +127,9 @@ update msg model =
                 _ ->
                     let
                         posBng =
-                            PositionBng apiResponse.easting apiResponse.northing
+                            PositionEastingNorthing apiResponse.easting apiResponse.northing
                     in
-                    fetchRemoteCoords { model | positionBng = Success posBng }
+                    fetchRemoteCoords { model | positionEastingNorthing = Success posBng }
 
         GotBngLatLon (Err error) ->
             case model.viewType of
@@ -140,7 +140,7 @@ update msg model =
                 _ ->
                     ( { model
                         | message = "BNG API error: " ++ fromHttpError error
-                        , positionBng = Failure "Error"
+                        , positionEastingNorthing = Failure "Error"
                       }
                     , Cmd.none
                     )
@@ -157,12 +157,12 @@ update msg model =
                             PositionDec apiResponse.longitude apiResponse.latitude
 
                         bng =
-                            PositionBng apiResponse.easting apiResponse.northing
+                            PositionEastingNorthing apiResponse.easting apiResponse.northing
 
                         newModel =
                             { model
                                 | positionDec = Success dec
-                                , positionBng = Success bng
+                                , positionEastingNorthing = Success bng
                             }
                     in
                     fetchRemoteCoords newModel
@@ -302,7 +302,7 @@ initialModel =
     , parsedW3w = Nothing
     , positionDec = NotAsked
     , positionW3w = NotAsked
-    , positionBng = NotAsked
+    , positionEastingNorthing = NotAsked
     , positionOlc = NotAsked
     , viewType = SelectMode
     , accuracy = Nothing
@@ -370,16 +370,16 @@ fetchRemoteCoords model =
         Success dec ->
             case model.positionOlc of
                 NeedToFetch ->
-                    case model.positionBng of
+                    case model.positionEastingNorthing of
                         NeedToFetch ->
                             case model.positionW3w of
                                 NeedToFetch ->
-                                    ( { model | positionOlc = WaitingForResponse, positionBng = WaitingForResponse, positionW3w = WaitingForResponse }
+                                    ( { model | positionOlc = WaitingForResponse, positionEastingNorthing = WaitingForResponse, positionW3w = WaitingForResponse }
                                     , Cmd.batch [ fetchOlcFromDec dec, fetchBngFromDec dec, fetchW3wFromDec dec ]
                                     )
 
                                 _ ->
-                                    ( { model | positionOlc = WaitingForResponse, positionBng = WaitingForResponse }
+                                    ( { model | positionOlc = WaitingForResponse, positionEastingNorthing = WaitingForResponse }
                                     , Cmd.batch [ fetchOlcFromDec dec, fetchBngFromDec dec ]
                                     )
 
@@ -396,16 +396,16 @@ fetchRemoteCoords model =
                                     )
 
                 _ ->
-                    case model.positionBng of
+                    case model.positionEastingNorthing of
                         NeedToFetch ->
                             case model.positionW3w of
                                 NeedToFetch ->
-                                    ( { model | positionBng = WaitingForResponse, positionW3w = WaitingForResponse }
+                                    ( { model | positionEastingNorthing = WaitingForResponse, positionW3w = WaitingForResponse }
                                     , Cmd.batch [ fetchBngFromDec dec, fetchW3wFromDec dec ]
                                     )
 
                                 _ ->
-                                    ( { model | positionBng = WaitingForResponse }
+                                    ( { model | positionEastingNorthing = WaitingForResponse }
                                     , fetchBngFromDec dec
                                     )
 
@@ -425,7 +425,7 @@ fetchRemoteCoords model =
                     ( { model | positionDec = WaitingForResponse }, fetchDecFromOlc olc )
 
                 _ ->
-                    case model.positionBng of
+                    case model.positionEastingNorthing of
                         Success bng ->
                             ( { model | positionDec = WaitingForResponse }, fetchDecFromBng bng )
 
@@ -466,7 +466,7 @@ fetchBngFromDec pos =
         }
 
 
-fetchDecFromBng : PositionBng -> Cmd Msg
+fetchDecFromBng : PositionEastingNorthing -> Cmd Msg
 fetchDecFromBng pos =
     let
         east =
