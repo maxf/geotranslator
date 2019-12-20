@@ -136,7 +136,7 @@ renderPage model =
                 ]
             , renderPosBng model
             , renderPosDec model
-            , renderPosDms model
+--            , renderPosDms model
             , renderPosW3w model
             , renderPosOlc model
             , row [ centerX ] [ renderMapButton model.positionDec ]
@@ -148,7 +148,7 @@ renderPage model =
             , renderInputBox model
             , renderPosBng model
             , renderPosDec model
-            , renderPosDms model
+--            , renderPosDms model
             , renderPosW3w model
             , renderPosOlc model
             , row [ centerX ] [ renderMapButton model.positionDec ]
@@ -329,11 +329,38 @@ renderPosDec model =
 
                         latString =
                             pos.lat |> roundTo 100000 |> fromFloat
+
+                        dms =
+                            dec2dms pos
+
+                        lonDmsString =
+                            fromFloat dms.lon.degrees
+                                ++ "° "
+                                ++ fromInt (round dms.lon.minutes)
+                                ++ "′ "
+                                ++ fromFloat (dms.lon.seconds |> roundTo 100)
+                                ++ "″ "
+                                ++ dms.lon.direction
+
+                        latDmsString =
+                            fromFloat dms.lat.degrees
+                                ++ "° "
+                                ++ fromInt (round dms.lat.minutes)
+                                ++ "′ "
+                                ++ fromFloat (dms.lat.seconds |> roundTo 100)
+                                ++ "″ "
+                                ++ dms.lat.direction
                     in
                     column
-                        lonLatStyle
-                        [ "Longitude: " ++ lonString |> text
-                        , "Latitude: " ++ latString |> text
+                        (width fill :: lonLatStyle)
+                        [ row
+                              [ width fill ]
+                              [ "Longitude: " ++ lonString |> text
+                              , el [ Font.size 16, alignRight ] ("(" ++ lonDmsString ++ ")" |> text) ]
+                        , row
+                              [ width fill ]
+                              [ "Latitude: " ++ latString |> text
+                              , el [ Font.size 16, alignRight ] ("(" ++ latDmsString ++ ")" |> text) ]
                         ]
 
                 Failure _ ->
@@ -344,61 +371,7 @@ renderPosDec model =
     in
     column
         positionBoxStyle
-        [ el positionBoxLabelStyle (text "Decimal")
-        , content
-        ]
-
-
-renderPosDms : Model -> Element Msg
-renderPosDms model =
-    let
-        content =
-            case model.positionDec of
-                Success pos ->
-                    let
-                        dms =
-                            dec2dms pos
-
-                        lonString =
-                            fromFloat dms.lon.degrees
-                                ++ " degrees, "
-                                ++ fromInt (round dms.lon.minutes)
-                                ++ " minutes, "
-                                ++ fromFloat (dms.lon.seconds |> roundTo 100)
-                                ++ " seconds "
-                                ++ (if dms.lon.direction == "W" then
-                                        "West"
-
-                                    else
-                                        "East"
-                                   )
-
-                        latString =
-                            fromFloat dms.lat.degrees
-                                ++ " degrees, "
-                                ++ fromInt (round dms.lat.minutes)
-                                ++ " minutes, "
-                                ++ fromFloat (dms.lat.seconds |> roundTo 100)
-                                ++ " seconds "
-                                ++ (if dms.lat.direction == "N" then
-                                        "North"
-
-                                    else
-                                        "South"
-                                   )
-                    in
-                    column
-                        lonLatStyle
-                        [ paragraph [] [ "Longitude: " ++ lonString |> text ]
-                        , paragraph [] [ "Latitude: " ++ latString |> text ]
-                        ]
-
-                _ ->
-                    none
-    in
-    column
-        positionBoxStyle
-        [ el positionBoxLabelStyle (text "Degrees")
+        [ el positionBoxLabelStyle (text "Lat/Lon")
         , content
         ]
 
