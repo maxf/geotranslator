@@ -8,7 +8,7 @@ import Element.Input as Input
 import Element.Region as Region
 import Html exposing (Html)
 import Html.Attributes
-import String exposing (fromFloat, fromInt)
+import String exposing (fromFloat, fromInt, left)
 import Types exposing (..)
 
 
@@ -95,7 +95,7 @@ renderDebugMessage message =
         , Font.size 12
         , alignRight
         ]
-        [ text <| message ++ " (v0.8.0)" ]
+        [ text <| (String.left 100 message) ++ "... (v0.8.0)" ]
 
 
 renderGeocodeGuess : Geocode -> Element Msg
