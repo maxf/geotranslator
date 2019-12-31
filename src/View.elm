@@ -223,16 +223,35 @@ renderReload =
 
 renderAccuracy : Maybe Float -> Element Msg
 renderAccuracy accuracy =
+    let
+        accStyle =
+            [ Font.size 14, padding 3, Border.rounded 3 ]
+    in
     case accuracy of
         Nothing ->
-            el [ Font.size 14 ] (text "Please wait")
+            el accStyle (text "Please wait")
 
         Just acc ->
             let
+                t = 30
+                m = 150
+
                 accS =
                     acc |> round |> fromInt
+
+                red =
+                    (if acc < t then acc*m/t else m) |> round
+
+                green =
+                    (if acc < t then (t-acc)*m/t else 0) |> round
+
+                blue =
+                    0
+
+                accColor =
+                    Background.color (rgb255 red green blue)
             in
-            el [ Font.size 14 ] (text ("accuracy: " ++ accS ++ "m"))
+            el (accColor :: accStyle) (text ("accuracy: " ++ accS ++ "m"))
 
 
 renderInputBox : Model -> Element Msg
