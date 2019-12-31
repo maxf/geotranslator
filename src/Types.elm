@@ -259,7 +259,7 @@ fromHttpError error =
         Http.BadBody s ->
             "Bad body: " ++ s
 
-
+{-
 removeTrailingZeros : String -> String
 removeTrailingZeros s =
     let
@@ -298,3 +298,4 @@ eastingNorthing2Ngr pos =
 lookupGridRef : String -> String
 lookupGridRef digits =
     case digits of
+-}
