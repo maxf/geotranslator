@@ -9,10 +9,10 @@ import String exposing (fromInt, slice)
 type Msg
     = GotDeviceLocation PositionBrowser
     | GotNewInputValue String
-    | GotBngCoords (Result Http.Error BngApiResponse)
-    | GotBngLatLon (Result Http.Error BngApiResponse)
     | GotOlcFromDec ( Bool, PositionOlc )
     | GotDecFromOlc ( Bool, PositionDec )
+    | GotOsgbFromDec ( Bool, PositionOsgb )
+    | GotDecFromOsgb ( Bool, PositionDec )
     | GotW3wCoords (Result Http.Error W3wApiResponse)
     | GotW3wWords (Result Http.Error W3wApiResponse)
     | UserChoseFindLocation
@@ -56,7 +56,8 @@ type alias PositionW3w =
     , nearestPlace : String
     }
 
-type alias PositionEastingNorthing =
+
+type alias PositionOsgb =
     { easting : Float
     , northing : Float
     }
@@ -94,7 +95,7 @@ type Geocode
     = Dec -- Longitude/latitude (decimal values)
     | DMS -- Longitude/latitude (degrees, minutes, seconds)
     | W3W -- What3Words
-    | BNG -- British National Grid
+    | OSGB -- British National Grid
     | OLC -- Open Location Codes (aka Plus Codes)
     | NoMatch
 
@@ -118,8 +119,8 @@ type alias Model =
     -- What3Words
     , positionW3w : RemoteData String PositionW3w
 
-    -- British National Grid Eastings/Northings
-    , positionEastingNorthing : RemoteData String PositionEastingNorthing
+    -- OSGB (Eastings/Northings)
+    , positionOsgb : RemoteData String PositionOsgb
 
     -- Open Location Codes
     , positionOlc : RemoteData String PositionOlc
@@ -134,14 +135,6 @@ type alias W3wApiResponse =
     { words : String
     , nearestPlace : String
     , coordinates : W3wApiResponseCoordinates
-    }
-
-
-type alias BngApiResponse =
-    { latitude : Float
-    , longitude : Float
-    , easting : Float
-    , northing : Float
     }
 
 
@@ -270,7 +263,7 @@ removeTrailingZeros s =
         Regex.replace trailingZerosRegex (\_ -> "") s
 
 
-eastingNorthing2Ngr : PositionEastingNorthing -> PositionNgr
+eastingNorthing2Ngr : PositionOsgb -> PositionNgr
 eastingNorthing2Ngr pos =
     let
         shortEasting =

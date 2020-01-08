@@ -13,6 +13,7 @@
     "http-errors": "~1.6.3",
     "morgan": "~1.9.1",
     "node-sass-middleware": "0.11.0",
+    "proj4": "^2.6.0",
     "request": "^2.88.0",
     "url": "^0.11.0"
   }

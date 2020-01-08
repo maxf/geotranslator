@@ -9,8 +9,8 @@ matchInput model =
     matchInputTryOlc model
 
 
-matchInputTryBng : Model -> Model
-matchInputTryBng model =
+matchInputTryOsbg : Model -> Model
+matchInputTryOsbg model =
     if model.userInput == "" then
         { model | message = "" }
 
@@ -18,7 +18,7 @@ matchInputTryBng model =
         let
             matches : List Regex.Match
             matches =
-                Regex.find posBngRegex model.userInput
+                Regex.find posOsbgRegex model.userInput
         in
         case matches of
             [ match ] ->
@@ -31,10 +31,10 @@ matchInputTryBng model =
                             northing =
                                 String.toFloat northingString |> Maybe.withDefault 0
                         in
-                        modelFromBng True "Found BNG" easting northing model
+                        modelFromOsbg True "Found OSGB" easting northing model
 
                     _ ->
-                        modelFromBng False "Bad BNG regex matches" 0 0 model
+                        modelFromOsbg False "Bad OSGB regex matches" 0 0 model
 
             _ ->
                 matchInputTryDec model
@@ -164,7 +164,7 @@ matchInputTryOlc model =
                     modelFromOlc False "Bad Olc match" Nothing model
 
         _ ->
-            matchInputTryBng model
+            matchInputTryOsbg model
 
 
 
@@ -209,20 +209,20 @@ posDmsRegex =
         Regex.fromString "^\\s*([0-9]+)°\\s*([0-9]+)[′']\\s*([0-9.]+)[\"″]?\\s*([NS])\\s*,\\s*([0-9]+)°\\s*([0-9]+)[′']\\s*([0-9.]+)[\"″]?\\s*([WE])\\s*$"
 
 
-posBngRegex : Regex.Regex
-posBngRegex =
+posOsbgRegex : Regex.Regex
+posOsbgRegex =
     Maybe.withDefault Regex.never <|
         Regex.fromString "(-?[0-9]{6})[^-0-9A-Za-z](-?[0-9]{6})"
 
 
-modelFromBng : Bool -> String -> Float -> Float -> Model -> Model
-modelFromBng valid message easting northing model =
+modelFromOsbg : Bool -> String -> Float -> Float -> Model -> Model
+modelFromOsbg valid message easting northing model =
     { model
         | message = message
         , inputIsValid = valid
         , matchedGeocode =
             if valid then
-                BNG
+                OSGB
 
             else
                 NoMatch
@@ -244,9 +244,9 @@ modelFromBng valid message easting northing model =
 
             else
                 NotAsked
-        , positionEastingNorthing =
+        , positionOsgb =
             if valid then
-                Success (PositionEastingNorthing easting northing)
+                Success (PositionOsgb easting northing)
 
             else
                 NeedToFetch
@@ -276,7 +276,7 @@ modelFromOlc valid message olc model =
 
             else
                 NotAsked
-        , positionEastingNorthing =
+        , positionOsgb =
             if valid then
                 NeedToFetch
 
@@ -315,7 +315,7 @@ modelFromW3w valid message words model =
 
             else
                 NotAsked
-        , positionEastingNorthing =
+        , positionOsgb =
             if valid then
                 NeedToFetch
 
@@ -357,7 +357,7 @@ modelFromDms valid message lon lat model =
 
             else
                 NotAsked
-        , positionEastingNorthing =
+        , positionOsgb =
             if valid then
                 NeedToFetch
 
@@ -399,7 +399,7 @@ modelFromDec valid message lon lat model =
 
             else
                 NotAsked
-        , positionEastingNorthing =
+        , positionOsgb =
             if valid then
                 NeedToFetch
 

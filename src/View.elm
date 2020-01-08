@@ -111,7 +111,7 @@ renderGeocodeGuess code =
             W3W ->
                 text "What you typed looks like what3words"
 
-            BNG ->
+            OSGB ->
                 text "What you typed looks like eastings/northings"
 
             OLC ->
@@ -134,7 +134,7 @@ renderPage model =
                     ]
                 , renderReload
                 ]
-            , renderPosBng model
+            , renderPosOsgb model
             , renderPosDec model
 --            , renderPosDms model
             , renderPosW3w model
@@ -146,7 +146,7 @@ renderPage model =
         FindLocation ->
             [ row [ spacing 10 ] [ renderBackButton, renderTitle model ]
             , renderInputBox model
-            , renderPosBng model
+            , renderPosOsgb model
             , renderPosDec model
 --            , renderPosDms model
             , renderPosW3w model
@@ -432,11 +432,11 @@ renderPosW3w model =
         ]
 
 
-renderPosBng : Model -> Element Msg
-renderPosBng model =
+renderPosOsgb : Model -> Element Msg
+renderPosOsgb model =
     let
-        bngString =
-            case model.positionEastingNorthing of
+        osgbString =
+            case model.positionOsgb of
                 NotAsked ->
                     text ""
 
@@ -459,7 +459,7 @@ renderPosBng model =
     column
         positionBoxStyle
         [ el positionBoxLabelStyle (text "National Grid")
-        , bngString
+        , osgbString
         ]
 
 

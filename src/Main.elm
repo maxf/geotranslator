@@ -41,6 +41,12 @@ port convertDecToOlc : ( Float, Float ) -> Cmd msg
 port convertOlcToDec : String -> Cmd msg
 
 
+port convertDecToOsgb : ( Float, Float ) -> Cmd msg
+
+
+port convertOsgbToDec : ( Float, Float ) -> Cmd msg
+
+
 
 -- Subscriptions
 
@@ -57,6 +63,12 @@ port convertedDecToOlc : (( Bool, PositionOlc ) -> msg) -> Sub msg
 port convertedOlcToDec : (( Bool, PositionDec ) -> msg) -> Sub msg
 
 
+port convertedDecToOsgb : (( Bool, PositionOsgb ) -> msg) -> Sub msg
+
+
+port convertedOsgbToDec : (( Bool, PositionDec ) -> msg) -> Sub msg
+
+
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
@@ -64,6 +76,8 @@ subscriptions model =
         , injectedInputCharacter GotNewInputValue
         , convertedDecToOlc GotOlcFromDec
         , convertedOlcToDec GotDecFromOlc
+        , convertedDecToOsgb GotOsgbFromDec
+        , convertedOsgbToDec GotDecFromOsgb
         ]
 
 
@@ -73,7 +87,7 @@ withNewUserInput value model =
         | userInput = value
         , positionDec = NotAsked
         , positionW3w = NotAsked
-        , positionEastingNorthing = NotAsked
+        , positionOsgb = NotAsked
         , positionOlc = NotAsked
         , parsedW3w = Nothing
     }
@@ -103,69 +117,6 @@ update msg model =
 
         GotNewInputValue text ->
             ( model |> withNewUserInput text, Cmd.none )
-
-        GotBngCoords (Err error) ->
-            case model.viewType of
-                SelectMode ->
-                    -- ignore callbacks if the user has gone back to start screen
-                    ( model, Cmd.none )
-
-                _ ->
-                    ( { model
-                        | message = "BNG API error: " ++ fromHttpError error
-                        , positionEastingNorthing = Failure "Error"
-                      }
-                    , Cmd.none
-                    )
-
-        GotBngCoords (Ok apiResponse) ->
-            case model.viewType of
-                SelectMode ->
-                    -- ignore callbacks if the user has gone back to start screen
-                    ( model, Cmd.none )
-
-                _ ->
-                    let
-                        posBng =
-                            PositionEastingNorthing apiResponse.easting apiResponse.northing
-                    in
-                    fetchRemoteCoords { model | positionEastingNorthing = Success posBng }
-
-        GotBngLatLon (Err error) ->
-            case model.viewType of
-                SelectMode ->
-                    -- ignore callbacks if the user has gone back to start screen
-                    ( model, Cmd.none )
-
-                _ ->
-                    ( { model
-                        | message = "BNG API error: " ++ fromHttpError error
-                        , positionEastingNorthing = Failure "Error"
-                      }
-                    , Cmd.none
-                    )
-
-        GotBngLatLon (Ok apiResponse) ->
-            case model.viewType of
-                SelectMode ->
-                    -- ignore callbacks if the user has gone back to start screen
-                    ( model, Cmd.none )
-
-                _ ->
-                    let
-                        dec =
-                            PositionDec apiResponse.longitude apiResponse.latitude
-
-                        bng =
-                            PositionEastingNorthing apiResponse.easting apiResponse.northing
-
-                        newModel =
-                            { model
-                                | positionDec = Success dec
-                                , positionEastingNorthing = Success bng
-                            }
-                    in
-                    fetchRemoteCoords newModel
 
         GotW3wWords (Err error) ->
             case model.viewType of
@@ -289,6 +240,34 @@ update msg model =
                             model.positionOlc
                 }
 
+        GotOsgbFromDec ( error, osgb ) ->
+            fetchRemoteCoords
+                { model
+                    | positionOsgb =
+                        if error then
+                            Failure "invalid"
+
+                        else
+                            Success osgb
+                }
+
+        GotDecFromOsgb ( error, dec ) ->
+            fetchRemoteCoords
+                { model
+                    | positionDec =
+                        if error then
+                            NotAsked
+
+                        else
+                            Success dec
+                    , positionOsgb =
+                        if error then
+                            Failure "invalid"
+
+                        else
+                            model.positionOsgb
+                }
+
         NoOp ->
             ( model, Cmd.none )
 
@@ -302,7 +281,7 @@ initialModel =
     , parsedW3w = Nothing
     , positionDec = NotAsked
     , positionW3w = NotAsked
-    , positionEastingNorthing = NotAsked
+    , positionOsgb = NotAsked
     , positionOlc = NotAsked
     , viewType = SelectMode
     , accuracy = Nothing
@@ -353,34 +332,23 @@ w3wApiResponseDecoder =
         |> required "coordinates" coordinatesDecoder
 
 
-bngApiResponseDecoder : Decoder BngApiResponse
-bngApiResponseDecoder =
-    -- example: {"DEGMINSECLNG":{"DEGREES":-1,"SECONDS":24.028476096768,"MINUTES":32},"EASTING":429157,"LONGITUDE":-1.54000791002688,"NORTHING":623009,"DEGMINSECLAT":{"DEGREES":55,"SECONDS":59.99859710664,"MINUTES":29},"LATITUDE":55.4999996103074}
-    -- example: {"DEGMINSECLNG":{"DEGREES":-1,"SECONDS":24,"MINUTES":32},"EASTING":451030.444044407,"LONGITUDE":-1.54,"ERROR":false,"DEGMINSECLAT":{"DEGREES":-5,"SECONDS":0,"MINUTES":33},"NORTHING":-6141064.83570885,"LATITUDE":-5.55}
-    Decode.map4 BngApiResponse
-        (Decode.field "LATITUDE" float)
-        (Decode.field "LONGITUDE" float)
-        (Decode.field "EASTING" float)
-        (Decode.field "NORTHING" float)
-
-
 fetchRemoteCoords : Model -> ( Model, Cmd Msg )
 fetchRemoteCoords model =
     case model.positionDec of
         Success dec ->
             case model.positionOlc of
                 NeedToFetch ->
-                    case model.positionEastingNorthing of
+                    case model.positionOsgb of
                         NeedToFetch ->
                             case model.positionW3w of
                                 NeedToFetch ->
-                                    ( { model | positionOlc = WaitingForResponse, positionEastingNorthing = WaitingForResponse, positionW3w = WaitingForResponse }
-                                    , Cmd.batch [ fetchOlcFromDec dec, fetchBngFromDec dec, fetchW3wFromDec dec ]
+                                    ( { model | positionOlc = WaitingForResponse, positionOsgb = WaitingForResponse, positionW3w = WaitingForResponse }
+                                    , Cmd.batch [ fetchOlcFromDec dec, fetchOsgbFromDec dec, fetchW3wFromDec dec ]
                                     )
 
                                 _ ->
-                                    ( { model | positionOlc = WaitingForResponse, positionEastingNorthing = WaitingForResponse }
-                                    , Cmd.batch [ fetchOlcFromDec dec, fetchBngFromDec dec ]
+                                    ( { model | positionOlc = WaitingForResponse, positionOsgb = WaitingForResponse }
+                                    , Cmd.batch [ fetchOlcFromDec dec, fetchOsgbFromDec dec ]
                                     )
 
                         _ ->
@@ -396,17 +364,17 @@ fetchRemoteCoords model =
                                     )
 
                 _ ->
-                    case model.positionEastingNorthing of
+                    case model.positionOsgb of
                         NeedToFetch ->
                             case model.positionW3w of
                                 NeedToFetch ->
-                                    ( { model | positionEastingNorthing = WaitingForResponse, positionW3w = WaitingForResponse }
-                                    , Cmd.batch [ fetchBngFromDec dec, fetchW3wFromDec dec ]
+                                    ( { model | positionOsgb = WaitingForResponse, positionW3w = WaitingForResponse }
+                                    , Cmd.batch [ fetchOsgbFromDec dec, fetchW3wFromDec dec ]
                                     )
 
                                 _ ->
-                                    ( { model | positionEastingNorthing = WaitingForResponse }
-                                    , fetchBngFromDec dec
+                                    ( { model | positionOsgb = WaitingForResponse }
+                                    , fetchOsgbFromDec dec
                                     )
 
                         _ ->
@@ -425,9 +393,9 @@ fetchRemoteCoords model =
                     ( { model | positionDec = WaitingForResponse }, fetchDecFromOlc olc )
 
                 _ ->
-                    case model.positionEastingNorthing of
-                        Success bng ->
-                            ( { model | positionDec = WaitingForResponse }, fetchDecFromBng bng )
+                    case model.positionOsgb of
+                        Success osgb ->
+                            ( { model | positionDec = WaitingForResponse }, fetchDecFromOsgb osgb )
 
                         _ ->
                             case model.positionW3w of
@@ -451,34 +419,14 @@ fetchOlcFromDec dec =
     convertDecToOlc ( dec.lon, dec.lat )
 
 
-fetchBngFromDec : PositionDec -> Cmd Msg
-fetchBngFromDec pos =
-    let
-        lon =
-            String.fromFloat pos.lon
-
-        lat =
-            String.fromFloat pos.lat
-    in
-    Http.get
-        { url = "/api/bng/latlon2bng?lon=" ++ lon ++ "&lat=" ++ lat
-        , expect = Http.expectJson GotBngCoords bngApiResponseDecoder
-        }
+fetchOsgbFromDec : PositionDec -> Cmd Msg
+fetchOsgbFromDec dec =
+    convertDecToOsgb ( dec.lon, dec.lat )
 
 
-fetchDecFromBng : PositionEastingNorthing -> Cmd Msg
-fetchDecFromBng pos =
-    let
-        east =
-            pos.easting |> String.fromFloat
-
-        north =
-            pos.northing |> String.fromFloat
-    in
-    Http.get
-        { url = "/api/bng/bng2latlon?easting=" ++ east ++ "&northing=" ++ north
-        , expect = Http.expectJson GotBngLatLon bngApiResponseDecoder
-        }
+fetchDecFromOsgb : PositionOsgb -> Cmd Msg
+fetchDecFromOsgb osgb =
+    convertOsgbToDec ( osgb.easting, osgb.northing )
 
 
 fetchW3wFromDec : PositionDec -> Cmd Msg
