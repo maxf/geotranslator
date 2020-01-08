@@ -6,8 +6,9 @@
 - Docker
 - API in Haskell
 - Make it clearer when codes are invalid
-- Group ports
+- Group all the ports
 
+- [DONE] Stop using the BGS API for WGS84 <-> OSBG
 - [DONE] "this looks like"
 - [DONE] [BUG] run w3w and bng XHR calls in parallels when both are Waiting
 - [DONE] Update w3w when tracking

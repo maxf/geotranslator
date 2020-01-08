@@ -95,7 +95,7 @@ renderDebugMessage message =
         , Font.size 12
         , alignRight
         ]
-        [ text <| (String.left 100 message) ++ "... (v0.9.0)" ]
+        [ text <| (String.left 100 message) ++ " (v0.9.1)" ]
 
 
 renderGeocodeGuess : Geocode -> Element Msg
