@@ -200,9 +200,9 @@ update msg model =
                     else
                         let
                             locationString =
-                                fromFloat location.lon
+                                fromFloat location.lat
                                     ++ ","
-                                    ++ fromFloat location.lat
+                                    ++ fromFloat location.lon
 
                             newModel =
                                 model |> withNewUserInput locationString

@@ -103,10 +103,10 @@ renderGeocodeGuess code =
     paragraph positionBoxLabelStyle
         [ case code of
             Dec ->
-                text "What you typed looks like lon/lat decimal"
+                text "What you typed looks like lat/lon decimal"
 
             DMS ->
-                text "What you typed looks like lon/lat degrees"
+                text "What you typed looks like lat/lon degrees"
 
             W3W ->
                 text "What you typed looks like what3words"
@@ -374,12 +374,12 @@ renderPosDec model =
                         (width fill :: lonLatStyle)
                         [ row
                               [ width fill ]
-                              [ "Longitude: " ++ lonString |> text
-                              , el [ Font.size 16, alignRight ] ("(" ++ lonDmsString ++ ")" |> text) ]
-                        , row
-                              [ width fill ]
                               [ "Latitude: " ++ latString |> text
                               , el [ Font.size 16, alignRight ] ("(" ++ latDmsString ++ ")" |> text) ]
+                        , row
+                              [ width fill ]
+                              [ "Longitude: " ++ lonString |> text
+                              , el [ Font.size 16, alignRight ] ("(" ++ lonDmsString ++ ")" |> text) ]
                         ]
 
                 Failure _ ->

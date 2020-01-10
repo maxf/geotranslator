@@ -50,7 +50,7 @@ matchInputTryDec model =
     case matches of
         [ match ] ->
             case match.submatches of
-                [ Just lonString, Just latString ] ->
+                [ Just latString, Just lonString ] ->
                     let
                         lon =
                             String.toFloat lonString |> Maybe.withDefault 0
