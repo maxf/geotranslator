@@ -444,10 +444,17 @@ renderPosOsgb model =
                     text "(pending)"
 
                 Success pos ->
+                    let
+                        gridRef =
+                            pos
+                                |> toNgrRef
+                                |> Maybe.withDefault "N/A"
+                    in
                     column
                         lonLatStyle
                         [ "Easting: " ++ fromInt (round pos.easting) |> text
                         , "Northing: " ++ fromInt (round pos.northing) |> text
+                        , "Grid reference: " ++ gridRef |> text
                         ]
 
                 Failure message ->
