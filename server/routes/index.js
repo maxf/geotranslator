@@ -8,7 +8,11 @@ const router = express.Router();
 const sampleC2wResponse = '{"country":"ZZ","square":{"southwest":{"lng":51.499434,"lat":-0.136239},"northeast":{"lng":51.499461,"lat":-0.136212}},"nearestPlace":"","coordinates":{"lng":51.499447,"lat":-0.136225},"words":"prosecuted.amplification.showing","language":"en","map":"https:\/\/w3w.co\/prosecuted.amplification.showing"}';
 const sampleW2cResponse = '{"country":"GB","square":{"southwest":{"lng":-2.359051,"lat":51.381064},"northeast":{"lng":-2.359008,"lat":51.381091}},"nearestPlace":"Bath, Somerset","coordinates":{"lng":-2.359029,"lat":51.381078},"words":"incomes.decide.bronze","language":"en","map":"https:\/\/w3w.co\/prosecuted.amplification.showing"}';
 
-const DEV = !!process.env.DEV;
+const DEV = process.env.RUNTIME_ENV=='dev';
+
+
+console.log(`DEV is ${DEV}`);
+console.log(DEV ? 'running in dev mode' : 'running in live mode');
 
 /* GET home page. */
 //router.get('/', function(req, res, next) {

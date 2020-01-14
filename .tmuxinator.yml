@@ -6,4 +6,4 @@ windows:
       layout: main-vertical
       panes:
         - ls src/*.elm | entr -cr bash -c "clear && tmux clear-history && make"
-        - cd server && npm install && echo "run> W3WAPIKEY=[YOUR-API-KEY] DEV=1 npm start"
+        - cd server && npm install && echo "run> W3WAPIKEY=[YOUR-API-KEY] RUNTIME_ENV=1 npm start"

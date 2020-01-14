@@ -1,18 +1,28 @@
 FROM alpine:latest
 
-EXPOSE 443
-
 RUN apk update
-RUN apk add nginx nodejs npm
-RUN apk add openrc --no-cache
+RUN apk add nodejs npm git curl make
+WORKDIR /app
+RUN git clone https://github.com/maxf/geotranslator.git
 
-COPY . /app
-RUN rm -rf /app/server/node_modules
-COPY nginx-config /etc/nginx/sites-available/default
+# compile elm code
+WORKDIR geotranslator
+RUN npm install
+RUN node_modules/.bin/elm make src/Main.elm --output=elm.js --optimize
+RUN node_modules/.bin/uglifyjs elm.js > server/public/elm.js
+RUN rm elm.js
+
+
+# build server
+WORKDIR /app/geotranslator/server
+RUN npm install
 
 ARG w3w_api_key=missing
 ENV W3WAPIKEY=$w3w_api_key
 
-WORKDIR /app/server
-RUN npm install
+ARG runtime_env=0
+ENV RUNTIME_ENV=$dev
+
+
+# start server
 CMD npm start
