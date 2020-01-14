@@ -11,7 +11,6 @@ const sampleW2cResponse = '{"country":"GB","square":{"southwest":{"lng":-2.35905
 const DEV = process.env.RUNTIME_ENV=='dev';
 
 
-console.log(`DEV is ${DEV}`);
 console.log(DEV ? 'running in dev mode' : 'running in live mode');
 
 /* GET home page. */
