@@ -3,13 +3,13 @@
 Easiest way, from the CLI (requires docker installed, but no need to clone this repo):
 
     docker pull maxf/geotranslate
-    docker run -p [port]:3000 --env W3WAPIKEY=[api-key] --env RUNTIME_ENV=[dev|live] maxf/geotranslate
+    docker run -p [port]:3000 --env W3WAPIKEY=[api-key] --env RUNTIME_ENV=[dev|live] --restart always maxf/geotranslate
 
 
 Alternatively, if you want to build images from your local clone of this repo:
 
     docker build .
-    docker run -p [port]:3000 --env W3WAPIKEY=[api-key] --env RUNTIME_ENV=[dev|live] geotranslator
+    docker run -p [port]:3000 --env W3WAPIKEY=[api-key] --env RUNTIME_ENV=[dev|live] --restart always geotranslator
 
 
 
