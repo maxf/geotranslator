@@ -47,9 +47,7 @@ server {
         ssl_certificate /etc/letsencrypt/live/e98.me-0001/fullchain.pem;
         ssl_certificate_key /etc/letsencrypt/live/e98.me-0001/privkey.pem;
 
-        root /home/ubuntu/geotranslate/public;
-
-        location /api {
+        location / {
                 proxy_pass http://localhost:3000;
                 proxy_http_version 1.1;
                 proxy_set_header Upgrade $http_upgrade;
@@ -66,9 +64,7 @@ server {
         ssl_certificate /etc/letsencrypt/live/e98.me-0001/fullchain.pem;
         ssl_certificate_key /etc/letsencrypt/live/e98.me-0001/privkey.pem;
 
-        root /home/ubuntu/geotranslate-dev/public;
-
-        location /api {
+        location / {
                 proxy_pass http://localhost:3001;
                 proxy_http_version 1.1;
                 proxy_set_header Upgrade $http_upgrade;
