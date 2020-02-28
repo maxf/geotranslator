@@ -1,10 +1,13 @@
 module Types exposing (..)
 
+import Browser exposing (UrlRequest)
+import Browser.Navigation
 import Dict
 import Http
 import Json.Encode
 import Regex
 import String exposing (fromInt, slice)
+import Url exposing (Url)
 
 
 type Msg
@@ -16,13 +19,12 @@ type Msg
     | GotDecFromOsgb ( Bool, PositionDec )
     | GotW3wCoords (Result Http.Error W3wApiResponse)
     | GotW3wWords (Result Http.Error W3wApiResponse)
-    | UserChoseFindLocation
-    | UserChoseFindMe
-    | UserClickedBack
+    | UserClickedLink UrlRequest
     | UserClickedClear
     | UserClickedRefresh
     | UserEnteredSymbol String
     | UserTyped String
+    | UrlChanged Url
     | NoOp
 
 
@@ -96,7 +98,8 @@ type Geocode
 
 
 type alias Model =
-    { userInput : String
+    { key : Browser.Navigation.Key
+    , userInput : String
     , message : String
     , inputIsValid : Bool
     , viewType : ViewType

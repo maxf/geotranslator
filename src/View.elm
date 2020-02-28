@@ -1,5 +1,6 @@
 module View exposing (render)
 
+import Browser exposing (Document)
 import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
@@ -74,18 +75,31 @@ symbolEntryStyle =
     ]
 
 
-render : Model -> Html Msg
+render : Model -> Browser.Document Msg
 render model =
-    layout
-        [ Background.color colour1
-        , Font.color (rgba 1 1 1 1)
-        , Font.size 19
-        , Font.family [ Font.sansSerif ]
+    { title =
+        case model.viewType of
+            SelectMode ->
+                "Geotranslate"
+
+            FindLocation ->
+                "Find a location"
+
+            FindMe ->
+                "Find me"
+    , body =
+        [ layout
+            [ Background.color colour1
+            , Font.color (rgba 1 1 1 1)
+            , Font.size 19
+            , Font.family [ Font.sansSerif ]
+            ]
+          <|
+            column
+                [ padding 5, spacing 15, width fill ]
+                (renderPage model)
         ]
-    <|
-        column
-            [ padding 5, spacing 15, width fill ]
-            (renderPage model)
+    }
 
 
 renderDebugMessage : String -> Element Msg
@@ -95,7 +109,7 @@ renderDebugMessage message =
         , Font.size 12
         , alignRight
         ]
-        [ text <| (String.left 100 message) ++ " (v0.9.1)" ]
+        [ text <| String.left 100 message ++ " (v0.9.1)" ]
 
 
 renderGeocodeGuess : Geocode -> Element Msg
@@ -136,7 +150,8 @@ renderPage model =
                 ]
             , renderPosOsgb model
             , renderPosDec model
---            , renderPosDms model
+
+            --            , renderPosDms model
             , renderPosW3w model
             , renderPosOlc model
             , row [ centerX ] [ renderMapButton model.positionDec ]
@@ -148,7 +163,8 @@ renderPage model =
             , renderInputBox model
             , renderPosOsgb model
             , renderPosDec model
---            , renderPosDms model
+
+            --            , renderPosDms model
             , renderPosW3w model
             , renderPosOlc model
             , row [ centerX ] [ renderMapButton model.positionDec ]
@@ -158,12 +174,12 @@ renderPage model =
         SelectMode ->
             [ column
                 [ padding 50, spacing 20, width fill, Font.center ]
-                [ Input.button startButtonStyle
-                    { onPress = Just UserChoseFindMe
+                [ link startButtonStyle
+                    { url = "#findMe"
                     , label = text "Find me"
                     }
-                , Input.button startButtonStyle
-                    { onPress = Just UserChoseFindLocation
+                , link startButtonStyle
+                    { url = "#locate"
                     , label = text "Find a location"
                     }
                 ]
@@ -233,17 +249,32 @@ renderAccuracy accuracy =
 
         Just acc ->
             let
-                t = 30
-                m = 150
+                t =
+                    30
+
+                m =
+                    150
 
                 accS =
                     acc |> round |> fromInt
 
                 red =
-                    (if acc < t then acc*m/t else m) |> round
+                    (if acc < t then
+                        acc * m / t
+
+                     else
+                        m
+                    )
+                        |> round
 
                 green =
-                    (if acc < t then (t-acc)*m/t else 0) |> round
+                    (if acc < t then
+                        (t - acc) * m / t
+
+                     else
+                        0
+                    )
+                        |> round
 
                 blue =
                     0
@@ -324,8 +355,10 @@ renderPosOlc model =
             case model.positionOlc of
                 Success pos ->
                     text pos
+
                 Failure _ ->
                     text "Invalid Plus Code"
+
                 _ ->
                     none
     in
@@ -373,13 +406,15 @@ renderPosDec model =
                     column
                         (width fill :: lonLatStyle)
                         [ row
-                              [ width fill ]
-                              [ "Latitude: " ++ latString |> text
-                              , el [ Font.size 16, alignRight ] ("(" ++ latDmsString ++ ")" |> text) ]
+                            [ width fill ]
+                            [ "Latitude: " ++ latString |> text
+                            , el [ Font.size 16, alignRight ] ("(" ++ latDmsString ++ ")" |> text)
+                            ]
                         , row
-                              [ width fill ]
-                              [ "Longitude: " ++ lonString |> text
-                              , el [ Font.size 16, alignRight ] ("(" ++ lonDmsString ++ ")" |> text) ]
+                            [ width fill ]
+                            [ "Longitude: " ++ lonString |> text
+                            , el [ Font.size 16, alignRight ] ("(" ++ lonDmsString ++ ")" |> text)
+                            ]
                         ]
 
                 Failure _ ->
@@ -486,9 +521,9 @@ renderMapButton pos =
 
 renderBackButton : Element Msg
 renderBackButton =
-    Input.button
+    link
         backButtonStyle
     <|
-        { onPress = Just UserClickedBack
+        { url = ""
         , label = text "‹ back"
         }

@@ -1,6 +1,7 @@
 port module Main exposing (main)
 
 import Browser
+import Browser.Navigation
 import Http
 import Json.Decode as Decode exposing (Decoder, float, map, map4, string)
 import Json.Decode.Pipeline exposing (required, requiredAt)
@@ -9,16 +10,19 @@ import MatchInput exposing (matchInput)
 import String exposing (fromFloat)
 import Task
 import Types exposing (..)
+import Url exposing (Url)
 import View
 
 
 main : Program () Model Msg
 main =
-    Browser.element
-        { init = \_ -> init
+    Browser.application
+        { init = init
         , view = View.render
         , update = update
         , subscriptions = subscriptions
+        , onUrlChange = UrlChanged
+        , onUrlRequest = UserClickedLink
         }
 
 
@@ -97,6 +101,17 @@ withNewUserInput value model =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        UserClickedLink link ->
+            case link of
+                Browser.Internal url ->
+                    ( model, Browser.Navigation.pushUrl model.key (Url.toString url) )
+
+                Browser.External href ->
+                    ( model, Browser.Navigation.load href )
+
+        UrlChanged url ->
+            dispatchFromUrl (initialModel model.key) url.fragment
+
         UserTyped value ->
             fetchRemoteCoords (model |> withNewUserInput value)
 
@@ -108,12 +123,6 @@ update msg model =
 
         UserClickedRefresh ->
             ( model, getCurrentLocation "" )
-
-        UserChoseFindLocation ->
-            ( { model | viewType = FindLocation }, Cmd.none )
-
-        UserChoseFindMe ->
-            ( { model | viewType = FindMe }, getCurrentLocation "" )
 
         GotNewInputValue text ->
             ( model |> withNewUserInput text, Cmd.none )
@@ -182,9 +191,6 @@ update msg model =
                             }
                     in
                     fetchRemoteCoords newModel
-
-        UserClickedBack ->
-            ( initialModel, stopGeolocation "" )
 
         GotDeviceLocation location ->
             case model.viewType of
@@ -272,9 +278,10 @@ update msg model =
             ( model, Cmd.none )
 
 
-initialModel : Model
-initialModel =
-    { userInput = ""
+initialModel : Browser.Navigation.Key -> Model
+initialModel navKey =
+    { key = navKey
+    , userInput = ""
     , message = ""
     , inputIsValid = False
     , matchedGeocode = NoMatch
@@ -288,9 +295,13 @@ initialModel =
     }
 
 
-init : ( Model, Cmd Msg )
-init =
-    ( initialModel, Cmd.none )
+init : flags -> Url -> Browser.Navigation.Key -> ( Model, Cmd Msg )
+init flags url navKey =
+    let
+        model =
+            initialModel navKey
+    in
+    dispatchFromUrl model url.fragment
 
 
 
@@ -454,3 +465,19 @@ fetchDecFromW3w w3w =
         { url = "/api/w3w/w2c?words=" ++ words
         , expect = Http.expectJson GotW3wCoords w3wApiResponseDecoder
         }
+
+
+dispatchFromUrl : Model -> Maybe String -> ( Model, Cmd Msg )
+dispatchFromUrl model maybeFrag =
+    let
+        frag =
+            maybeFrag |> Maybe.withDefault ""
+    in
+    if frag == "findMe" then
+        ( { model | viewType = FindMe }, getCurrentLocation "" )
+
+    else if frag == "locate" then
+        ( { model | viewType = FindLocation }, Cmd.none )
+
+    else
+        ( { model | viewType = SelectMode }, stopGeolocation "" )
