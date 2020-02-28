@@ -175,7 +175,7 @@ renderPage model =
             [ column
                 [ padding 50, spacing 20, width fill, Font.center ]
                 [ link startButtonStyle
-                    { url = "#findMe"
+                    { url = ""
                     , label = text "Find me"
                     }
                 , link startButtonStyle
@@ -524,6 +524,6 @@ renderBackButton =
     link
         backButtonStyle
     <|
-        { url = ""
+        { url = "#start"
         , label = text "‹ back"
         }

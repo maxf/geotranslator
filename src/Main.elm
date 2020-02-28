@@ -290,7 +290,7 @@ initialModel navKey =
     , positionW3w = NotAsked
     , positionOsgb = NotAsked
     , positionOlc = NotAsked
-    , viewType = SelectMode
+    , viewType = FindMe
     , accuracy = Nothing
     }
 
@@ -473,11 +473,11 @@ dispatchFromUrl model maybeFrag =
         frag =
             maybeFrag |> Maybe.withDefault ""
     in
-    if frag == "findMe" then
-        ( { model | viewType = FindMe }, getCurrentLocation "" )
+    if frag == "start" then
+        ( { model | viewType = SelectMode }, getCurrentLocation "" )
 
     else if frag == "locate" then
         ( { model | viewType = FindLocation }, Cmd.none )
 
     else
-        ( { model | viewType = SelectMode }, stopGeolocation "" )
+        ( { model | viewType = FindMe }, stopGeolocation "" )
