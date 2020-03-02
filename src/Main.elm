@@ -304,31 +304,6 @@ init flags url navKey =
     dispatchFromUrl model url.fragment
 
 
-
--- calculate all geolocation schemes from what3words
-{-
-   sample w3w responses when looking up words
-   eg
-   https://api.what3words.com/v3/convert-to-coordinates?words=filled.count.soap&key=[API-KEY]
-
-
-   200 with:
-   {"country":"GB","square":{"southwest":{"lng":-0.195543,"lat":51.520833},"northeast":{"lng":-0.195499,"lat":51.52086}},"nearestPlace":"Bayswater, London","coordinates":{"lng":-0.195521,"lat":51.520847},"words":"filled.count.soap"
-   ,"language":"en","map":"https:\/\/w3w.co\/filled.count.soap"}
-
-   400 with:
-   {"error":{"code":"BadWords","message":"words must be a valid 3 word address, such as filled.count.soap or \/\/\/filled.count.soap"}}
-
-
-   sample w3w responses when looking up coordinates:
-   eg: https://api.what3words.com/v3/convert-to-3wa?coordinates=51.521251%2C-0.203586&key=[API-KEY]
-
-   {"country":"ZZ","square":{"southwest":{"lng":0,"lat":0},"northeast":{"lng":0.000027,"lat":0.000027}},"nearestPlace":"","coordinates":{"lng":0.000013,"lat":0.000013},"words":"prosecuted.amplification.showings","language":"en","ma
-   p":"https:\/\/w3w.co\/prosecuted.amplification.showings"}
-
--}
-
-
 w3wApiResponseDecoder : Decoder W3wApiResponse
 w3wApiResponseDecoder =
     let
@@ -474,10 +449,10 @@ dispatchFromUrl model maybeFrag =
             maybeFrag |> Maybe.withDefault ""
     in
     if frag == "start" then
-        ( { model | viewType = SelectMode }, getCurrentLocation "" )
+        ( { model | viewType = SelectMode }, Cmd.none )
 
     else if frag == "locate" then
-        ( { model | viewType = FindLocation }, Cmd.none )
+        ( { model | viewType = FindLocation }, stopGeolocation "" )
 
     else
-        ( { model | viewType = FindMe }, stopGeolocation "" )
+        ( { model | viewType = FindMe }, getCurrentLocation "" )
