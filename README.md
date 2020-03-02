@@ -112,7 +112,7 @@ Every time:
 
 - deploy on the server, however you do it. For instance, using docker:
 
-1. create the new images
+1. create the new image:
 
 `docker build -t maxf/geotranslate:0.10.0`
 
@@ -120,4 +120,4 @@ Every time:
 
 2. on the server:
 
-`docker run -p 3000 --env W3WAPIKEY=XXX --env RUNTIME_ENV=live maxf/geotranslate`
+`docker run -p 3000 --env W3WAPIKEY=XXX --env RUNTIME_ENV=live maxf/geotranslate:0.10.0`
