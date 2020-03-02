@@ -110,4 +110,14 @@ Every time:
 - compile elm in production mode: `make build`
 
 
-- deploy your own way (eg, push the docker image: `docker push maxf/geotranslate`)
+- deploy on the server, however you do it. For instance, using docker:
+
+1. create the new images
+
+`docker build -t maxf/geotranslate:0.10.0`
+
+`docker push maxf/geotranslate:0.10.0`
+
+2. on the server:
+
+`docker run -p 3000 --env W3WAPIKEY=XXX --env RUNTIME_ENV=live maxf/geotranslate`
