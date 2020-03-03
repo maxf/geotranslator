@@ -5,5 +5,5 @@ public/elm.js: src/*.elm
 
 build:
 	elm make src/Main.elm --output=elm.js --optimize
-	uglifyjs elm.js > server/public/elm.js
-	rm elm.js
+	uglifyjs elm.js > elm2.js
+	mv elm2.js elm.js
