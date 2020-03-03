@@ -1,11 +1,11 @@
 // version 0.10.0
 
 const urlsToCache = [
-  '/',
-  '/elm.js',
-  '/logo-1668x1572.png',
-  '/logo-512x512.png',
-  '/logo-192x192.png'
+  '',
+  '/geotranslator/elm.js',
+  '/geotranslator/logo-1668x1572.png',
+  '/geotranslator/logo-512x512.png',
+  '/geotranslator/logo-192x192.png'
 ];
 
 const cacheName = 'cache';

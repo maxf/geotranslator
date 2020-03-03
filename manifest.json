@@ -13,9 +13,9 @@
       "sizes": "512x512"
     }
   ],
-  "start_url": "/",
+  "start_url": "/geotranslator",
   "background_color": "#3367D6",
   "display": "standalone",
-  "scope": "/",
+  "scope": "/geotranslator",
   "theme_color": "#3367D6"
 }
