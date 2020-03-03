@@ -76,7 +76,7 @@ Also:
 
 - The downloaded code is minimised, compressed by the server, heavily cached, so that very little needs to be downloaded before the app is usable.
 
-- The only reason why there's a server (as opposed to just static files) is to hide the What3words API key in Ajax calls. What3words are working on a solution. Of course, removing w3w from the app would also remove the need for a server.
+- The only reason why there's a server (as opposed to just static files) is to hide the What3words API key in Ajax calls. What3words are working on a solution. Of course, removing w3w from the app would also remove the need for a server. *In fact, this is what I did for the maxf.github.io version above. More details in the [gh-pages README](https://github.com/maxf/geotranslator/blob/gh-pages/README.md)*
 
 ## <a id="run"></a>Run/develop/deploy
 
