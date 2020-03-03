@@ -122,9 +122,6 @@ renderGeocodeGuess code =
             DMS ->
                 text "What you typed looks like lat/lon degrees"
 
-            W3W ->
-                text "What you typed looks like what3words"
-
             OSGB ->
                 text "What you typed looks like eastings/northings"
 
@@ -150,9 +147,6 @@ renderPage model =
                 ]
             , renderPosOsgb model
             , renderPosDec model
-
-            --            , renderPosDms model
-            , renderPosW3w model
             , renderPosOlc model
             , row [ centerX ] [ renderMapButton model.positionDec ]
             , renderDebugMessage model.message
@@ -163,9 +157,6 @@ renderPage model =
             , renderInputBox model
             , renderPosOsgb model
             , renderPosDec model
-
-            --            , renderPosDms model
-            , renderPosW3w model
             , renderPosOlc model
             , row [ centerX ] [ renderMapButton model.positionDec ]
             , renderDebugMessage model.message
@@ -427,43 +418,6 @@ renderPosDec model =
         positionBoxStyle
         [ el positionBoxLabelStyle (text "Lat/Lon")
         , content
-        ]
-
-
-renderPosW3w : Model -> Element Msg
-renderPosW3w model =
-    let
-        w3wString =
-            case model.positionW3w of
-                NeedToFetch ->
-                    text ""
-
-                NotAsked ->
-                    text ""
-
-                WaitingForResponse ->
-                    text "(pending)"
-
-                Success w3wPos ->
-                    column
-                        [ spacing 5 ]
-                        [ text <| String.join " " w3wPos.words
-                        , if w3wPos.nearestPlace == "" then
-                            none
-
-                          else
-                            paragraph
-                                [ Font.size 18, Font.color colour4 ]
-                                [ text <| " (" ++ w3wPos.nearestPlace ++ ")" ]
-                        ]
-
-                Failure message ->
-                    text "(not found)"
-    in
-    column
-        positionBoxStyle
-        [ el positionBoxLabelStyle (text "what3words")
-        , w3wString
         ]
 
 

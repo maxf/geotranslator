@@ -17,8 +17,6 @@ type Msg
     | GotDecFromOlc ( Bool, PositionDec )
     | GotOsgbFromDec ( Bool, PositionOsgb )
     | GotDecFromOsgb ( Bool, PositionDec )
-    | GotW3wCoords (Result Http.Error W3wApiResponse)
-    | GotW3wWords (Result Http.Error W3wApiResponse)
     | UserClickedLink UrlRequest
     | UserClickedClear
     | UserClickedRefresh
@@ -54,12 +52,6 @@ type alias PositionOlc =
     String
 
 
-type alias PositionW3w =
-    { words : List String
-    , nearestPlace : String
-    }
-
-
 type alias PositionOsgb =
     { easting : Float
     , northing : Float
@@ -91,7 +83,6 @@ type RemoteData error value
 type Geocode
     = Dec -- Longitude/latitude (decimal values)
     | DMS -- Longitude/latitude (degrees, minutes, seconds)
-    | W3W -- What3Words
     | OSGB -- British National Grid
     | OLC -- Open Location Codes (aka Plus Codes)
     | NoMatch
@@ -108,31 +99,14 @@ type alias Model =
     -- what geocoding type has been recognised
     , matchedGeocode : Geocode
 
-    -- when user entered 3 words, but they've not been validated by API:
-    , parsedW3w : Maybe (List String)
-
     -- latitude/longitude in decimal form:
     , positionDec : RemoteData String PositionDec
-
-    -- What3Words
-    , positionW3w : RemoteData String PositionW3w
 
     -- OSGB (Eastings/Northings)
     , positionOsgb : RemoteData String PositionOsgb
 
     -- Open Location Codes
     , positionOlc : RemoteData String PositionOlc
-    }
-
-
-type alias W3wApiResponseCoordinates =
-    { lng : Float, lat : Float }
-
-
-type alias W3wApiResponse =
-    { words : String
-    , nearestPlace : String
-    , coordinates : W3wApiResponseCoordinates
     }
 
 

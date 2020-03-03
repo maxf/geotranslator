@@ -90,10 +90,8 @@ withNewUserInput value model =
     { model
         | userInput = value
         , positionDec = NotAsked
-        , positionW3w = NotAsked
         , positionOsgb = NotAsked
         , positionOlc = NotAsked
-        , parsedW3w = Nothing
     }
         |> matchInput
 
@@ -126,71 +124,6 @@ update msg model =
 
         GotNewInputValue text ->
             ( model |> withNewUserInput text, Cmd.none )
-
-        GotW3wWords (Err error) ->
-            case model.viewType of
-                SelectMode ->
-                    -- ignore callbacks if the user has gone back to start screen
-                    ( model, Cmd.none )
-
-                _ ->
-                    ( { model
-                        | message = "W3W API error: " ++ fromHttpError error
-                        , positionW3w = Failure "Error"
-                      }
-                    , Cmd.none
-                    )
-
-        GotW3wWords (Ok w3wPosition) ->
-            case model.viewType of
-                SelectMode ->
-                    -- ignore callbacks if the user has gone back to start screen
-                    ( model, Cmd.none )
-
-                _ ->
-                    let
-                        newModel =
-                            { model
-                                | positionW3w = Success (PositionW3w (String.split "." w3wPosition.words) w3wPosition.nearestPlace)
-                            }
-                    in
-                    fetchRemoteCoords newModel
-
-        GotW3wCoords (Err error) ->
-            case model.viewType of
-                SelectMode ->
-                    -- ignore callbacks if the user has gone back to start screen
-                    ( model, Cmd.none )
-
-                _ ->
-                    ( { model
-                        | message = "W3W API error: " ++ fromHttpError error
-                        , positionW3w = Failure "got error from w3w"
-                      }
-                    , Cmd.none
-                    )
-
-        GotW3wCoords (Ok pos) ->
-            case model.viewType of
-                SelectMode ->
-                    -- ignore callbacks if the user has gone back to start screen
-                    ( model, Cmd.none )
-
-                _ ->
-                    let
-                        dec =
-                            PositionDec pos.coordinates.lng pos.coordinates.lat
-
-                        w3w =
-                            PositionW3w (String.split "." pos.words) pos.nearestPlace
-
-                        newModel =
-                            { model
-                                | positionDec = Success dec
-                                , positionW3w = Success w3w
-                            }
-                    in
-                    fetchRemoteCoords newModel
 
         GotDeviceLocation location ->
             case model.viewType of
@@ -285,9 +218,7 @@ initialModel navKey =
     , message = ""
     , inputIsValid = False
     , matchedGeocode = NoMatch
-    , parsedW3w = Nothing
     , positionDec = NotAsked
-    , positionW3w = NotAsked
     , positionOsgb = NotAsked
     , positionOlc = NotAsked
     , viewType = FindMe
@@ -304,20 +235,6 @@ init flags url navKey =
     dispatchFromUrl model url.fragment
 
 
-w3wApiResponseDecoder : Decoder W3wApiResponse
-w3wApiResponseDecoder =
-    let
-        coordinatesDecoder =
-            Decode.succeed W3wApiResponseCoordinates
-                |> required "lng" float
-                |> required "lat" float
-    in
-    Decode.succeed W3wApiResponse
-        |> required "words" string
-        |> required "nearestPlace" string
-        |> required "coordinates" coordinatesDecoder
-
-
 fetchRemoteCoords : Model -> ( Model, Cmd Msg )
 fetchRemoteCoords model =
     case model.positionDec of
@@ -326,52 +243,24 @@ fetchRemoteCoords model =
                 NeedToFetch ->
                     case model.positionOsgb of
                         NeedToFetch ->
-                            case model.positionW3w of
-                                NeedToFetch ->
-                                    ( { model | positionOlc = WaitingForResponse, positionOsgb = WaitingForResponse, positionW3w = WaitingForResponse }
-                                    , Cmd.batch [ fetchOlcFromDec dec, fetchOsgbFromDec dec, fetchW3wFromDec dec ]
-                                    )
-
-                                _ ->
-                                    ( { model | positionOlc = WaitingForResponse, positionOsgb = WaitingForResponse }
-                                    , Cmd.batch [ fetchOlcFromDec dec, fetchOsgbFromDec dec ]
-                                    )
+                            ( { model | positionOlc = WaitingForResponse, positionOsgb = WaitingForResponse }
+                            , Cmd.batch [ fetchOlcFromDec dec, fetchOsgbFromDec dec ]
+                            )
 
                         _ ->
-                            case model.positionW3w of
-                                NeedToFetch ->
-                                    ( { model | positionOlc = WaitingForResponse, positionW3w = WaitingForResponse }
-                                    , Cmd.batch [ fetchOlcFromDec dec, fetchW3wFromDec dec ]
-                                    )
-
-                                _ ->
-                                    ( { model | positionOlc = WaitingForResponse }
-                                    , fetchOlcFromDec dec
-                                    )
+                            ( { model | positionOlc = WaitingForResponse }
+                            , fetchOlcFromDec dec
+                            )
 
                 _ ->
                     case model.positionOsgb of
                         NeedToFetch ->
-                            case model.positionW3w of
-                                NeedToFetch ->
-                                    ( { model | positionOsgb = WaitingForResponse, positionW3w = WaitingForResponse }
-                                    , Cmd.batch [ fetchOsgbFromDec dec, fetchW3wFromDec dec ]
-                                    )
-
-                                _ ->
-                                    ( { model | positionOsgb = WaitingForResponse }
-                                    , fetchOsgbFromDec dec
-                                    )
+                            ( { model | positionOsgb = WaitingForResponse }
+                            , fetchOsgbFromDec dec
+                            )
 
                         _ ->
-                            case model.positionW3w of
-                                NeedToFetch ->
-                                    ( { model | positionW3w = WaitingForResponse }
-                                    , fetchW3wFromDec dec
-                                    )
-
-                                _ ->
-                                    ( model, Cmd.none )
+                            ( model, Cmd.none )
 
         NeedToFetch ->
             case model.positionOlc of
@@ -384,12 +273,7 @@ fetchRemoteCoords model =
                             ( { model | positionDec = WaitingForResponse }, fetchDecFromOsgb osgb )
 
                         _ ->
-                            case model.positionW3w of
-                                Success w3w ->
-                                    ( { model | positionDec = WaitingForResponse }, fetchDecFromW3w w3w )
-
-                                _ ->
-                                    ( model, Cmd.none )
+                            ( model, Cmd.none )
 
         _ ->
             ( model, Cmd.none )
@@ -413,33 +297,6 @@ fetchOsgbFromDec dec =
 fetchDecFromOsgb : PositionOsgb -> Cmd Msg
 fetchDecFromOsgb osgb =
     convertOsgbToDec ( osgb.easting, osgb.northing )
-
-
-fetchW3wFromDec : PositionDec -> Cmd Msg
-fetchW3wFromDec dec =
-    let
-        lonS =
-            dec.lon |> String.fromFloat
-
-        latS =
-            dec.lat |> String.fromFloat
-    in
-    Http.get
-        { url = "/api/w3w/c2w?lon=" ++ latS ++ "&lat=" ++ lonS
-        , expect = Http.expectJson GotW3wWords w3wApiResponseDecoder
-        }
-
-
-fetchDecFromW3w : PositionW3w -> Cmd Msg
-fetchDecFromW3w w3w =
-    let
-        words =
-            String.join "." w3w.words
-    in
-    Http.get
-        { url = "/api/w3w/w2c?words=" ++ words
-        , expect = Http.expectJson GotW3wCoords w3wApiResponseDecoder
-        }
 
 
 dispatchFromUrl : Model -> Maybe String -> ( Model, Cmd Msg )

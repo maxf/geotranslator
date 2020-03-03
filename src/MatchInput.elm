@@ -134,7 +134,7 @@ matchInputTryDms model =
                     modelFromDms False "Bad DMS regex matches" (DmsCoord 0 0 0 "W") (DmsCoord 0 0 0 "N") model
 
         _ ->
-            matchInputTryW3w model
+            modelFromDms False "No DMS regex matches" (DmsCoord 0 0 0 "W") (DmsCoord 0 0 0 "N") model
 
 
 
@@ -171,32 +171,6 @@ matchInputTryOlc model =
 -- What3words
 
 
-posW3wRegex : Regex.Regex
-posW3wRegex =
-    Maybe.withDefault Regex.never <|
-        Regex.fromString "^\\s*([a-zA-Z]+)[^a-zA-Z]+([a-zA-Z]+)[^a-zA-Z]+([a-zA-Z]+)\\s*$"
-
-
-matchInputTryW3w : Model -> Model
-matchInputTryW3w model =
-    let
-        matches : List Regex.Match
-        matches =
-            Regex.find posW3wRegex model.userInput
-    in
-    case matches of
-        [ match ] ->
-            case match.submatches of
-                [ Just word1, Just word2, Just word3 ] ->
-                    modelFromW3w True "Found W3W" (Just [ word1, word2, word3 ]) model
-
-                _ ->
-                    modelFromW3w False "Bad W3W regexp matches" Nothing model
-
-        _ ->
-            modelFromW3w False "No W3W regexp matches" Nothing model
-
-
 posDecRegex : Regex.Regex
 posDecRegex =
     Maybe.withDefault Regex.never <|
@@ -227,12 +201,6 @@ modelFromOsbg valid message easting northing model =
             else
                 NoMatch
         , positionDec =
-            if valid then
-                NeedToFetch
-
-            else
-                NotAsked
-        , positionW3w =
             if valid then
                 NeedToFetch
 
@@ -282,51 +250,6 @@ modelFromOlc valid message olc model =
 
             else
                 NotAsked
-        , positionW3w =
-            if valid then
-                NeedToFetch
-
-            else
-                NotAsked
-    }
-
-
-modelFromW3w : Bool -> String -> Maybe (List String) -> Model -> Model
-modelFromW3w valid message words model =
-    { model
-        | message = message
-        , parsedW3w = words
-        , inputIsValid = valid
-        , matchedGeocode =
-            if valid then
-                W3W
-
-            else
-                NoMatch
-        , positionW3w =
-            if valid then
-                Success { words = words |> Maybe.withDefault [], nearestPlace = "" }
-
-            else
-                NeedToFetch
-        , positionDec =
-            if valid then
-                NeedToFetch
-
-            else
-                NotAsked
-        , positionOsgb =
-            if valid then
-                NeedToFetch
-
-            else
-                NotAsked
-        , positionOlc =
-            if valid then
-                NeedToFetch
-
-            else
-                NotAsked
     }
 
 
@@ -351,12 +274,6 @@ modelFromDms valid message lon lat model =
 
             else
                 NeedToFetch
-        , positionW3w =
-            if valid then
-                NeedToFetch
-
-            else
-                NotAsked
         , positionOsgb =
             if valid then
                 NeedToFetch
@@ -390,12 +307,6 @@ modelFromDec valid message lon lat model =
         , positionDec =
             if valid then
                 Success dec
-
-            else
-                NotAsked
-        , positionW3w =
-            if valid then
-                NeedToFetch
 
             else
                 NotAsked
