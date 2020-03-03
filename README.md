@@ -8,6 +8,9 @@ It's sometimes difficult to be able to communicate your location when you're tal
 
 Various solutions are being developed and used by emergency services. This is a prototype for one solution. It's fast, open source, compatible, works offline, and is as accurate as your phone's GPS.
 
+Try it at: [https://maxf.github.io/geotranslator/](https://maxf.github.io/geotranslator). It's a PWA, so you can install it, too.
+
+
 Hopefully it'll inspire others to build better emergency service tools, until those tools (including this one) become redundant when [Advanced Mobile Location](https://en.wikipedia.org/wiki/Advanced_Mobile_Location) is supported across the board.
 
 
@@ -44,14 +47,15 @@ Here's the exchange again, using this webapp:
 - You: help, I'm lost and in danger
 - 999: what's your address?
 - You: I don't know, I'm in the woods
-- 999: OK, go to "geo.e98.me" in your browser, click "share your location", and tell me the numbers in the first blue box.
+- 999: OK, go to "[short URL]" in your browser, click "share your location", and tell me the numbers in the first blue box.
 [ Your phone downloads 156kB ]
 [ the first blue box shows your eastings/northings, which is what this 999 call centre understands]
 - You: 529457, 233942
 [999 enters numbers in their CAD, response team on its way]
 
+Precious minutes saved: with what3words you need to download a 61MB app, you need to tap about 10 times to get your position. 999 needs to know how to find a location from 3 words. With this solution: you only need to download 156kB, and tap once before you're able to communicate your position, which is simultaneously displayed using 6 different codes.
 
-With what3words you need to download a 61MB app, you need to tap about 10 times to get your position. 999 needs to know how to find a location from 3 words. With this solution: you only need to download 156kB, and tap once before you're able to communicate your position, which is simultaneously displayed using 6 different codes.
+
 
 
 Also:
